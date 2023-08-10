@@ -83,16 +83,24 @@ As for Form 990 Points of Interest, I have compiled several that I think are wor
 
 § (e.g. Planned Parenthood Federation of America was involved in transactions with Planned Parenthood Action Fund Inc. for upwards of $25M – which includes paying rent, funding of solicitations, etc.)
 
-Once you have the distinct groups operationalized on a conceptual level then we can see if we can proceduralize&nbsp;identification from the administrative data. I would start by building a list of all potential indicators on the 990 forms and schedules or related datasets (527 orgs file Form 8871 and 8872).
-Header, Box I, checkbox for 527 orgs
-990, Part IV, Q3:&nbsp;&nbsp;Did the organization engage in direct or indirect political campaign activities on behalf of or in opposition to candidates for public office?
-Schedule C, checkbox on H Election.
-Schedule C, lobbying expenses &gt; 0.
-Keywords in org name (header), mission (990 Part III), or program activities (990 Part III)
-I think we might have maybe a dozen indicators on the forms and another dozen useful variables on Schedule C and Schedule R? From there we create a decision tree to&nbsp;categorize orgs, eg:
+Once you have the distinct groups operationalized on a conceptual level then we can see if we can proceduralize&nbsp;identification from the administrative data. I would start by 
+* building a list of all potential indicators on the 990 forms and schedules or related datasets (527 orgs file Form 8871 and 8872).
+* Header, Box I, checkbox for 527 orgs
+* 990, Part IV, Q3:&nbsp;&nbsp;Did the organization engage in direct or indirect political campaign activities on behalf of or in opposition to candidates for public office?
+* Schedule C, checkbox on H Election.
+* Schedule C, lobbying expenses &gt; 0.
+* Keywords in org name (header), mission (990 Part III), or program activities (990 Part III)
+* 
+I think we might have maybe a dozen indicators on the forms and another dozen useful variables on Schedule C and Schedule R? From there we create a decision tree to categorize orgs, eg:
 
-If B=true and C &gt; 0 then Lobbying
+If B=true and C=0 then Lobbying
 
-The other data exercise would be identifying linked organizations, or answering the question of whether an org has a lobbying or political arm. They might disclose this on the items above, but we might also link orgs through shared boards or staff (990 Part VII), grants to partner organizations (Schedule I), disclosure of related entities (Schedule R?), political donations (527 form 8872?), or lobbying expenditures (Senate Office of Public Records through OpenSecrets?).
+The other data exercise would be identifying linked organizations, or answering the question of whether an org has a lobbying or political arm. They might disclose this on the items above, but we might also link orgs through:
+
+* shared boards or staff (990 Part VII),
+* grants to partner organizations (Schedule I),
+* disclosure of related entities (Schedule R?),
+* political donations (527 form 8872?), or
+* lobbying expenditures (Senate Office of Public Records through OpenSecrets?).
 
 Then the harder question is validating the taxonomy. Do the decision rules above misclassify any organizations? Are there relationships that cannot be observed through all of the disclosed linkages? Here is where your efforts could be very meaningful, especially if you are able to interview nonprofits about their activities and their strategies for deploying specific organizational configurations.
