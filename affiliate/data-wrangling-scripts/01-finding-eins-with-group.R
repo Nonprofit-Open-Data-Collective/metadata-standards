@@ -42,8 +42,9 @@ ein.keep <- unique(bmf.ein$EIN, core.ein$EIN, soi.ein$EIN, fromLast = F)
 eo.ein <- 
   eoALL %>%
   filter(AFFILIATION != 3 ) %>% #remove independent group
+  #get rid of the ones with GEN == 0000, 
+  #but keep those that are potnentially part of a group in a different data set
   filter(GROUP != "0000" | EIN %in% ein.keep) 
-
 
   
   
