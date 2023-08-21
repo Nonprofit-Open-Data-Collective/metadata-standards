@@ -4,9 +4,9 @@ Reproducible files for defining a new taxonomy of nonprofit affiliation structur
 Folder Structure: 
 
 * data-raw: all raw data files (cannot be pushed to github because files are too larger. I include data soureces here. All data used in analysis is in data-rodeo/.)
- * bmf-master.rds : 2022 NCCS BMF Master File : https://nccs-data.urban.org/data.php?ds=bmf
- * core2019.Rds : All 2019 NCCS core files combined into one data frame : https://nccs-data.urban.org/data.php?ds=core
- * eo1.csv, eo2.csv, eo3.csv, eo4.csv, eo_xx.csv, eo_pr.csv: IRS BMF files by region from https://www.irs.gov/charities-non-profits/exempt-organizations-business-master-file-extract-eo-bmf 
+  * bmf-master.rds : 2022 NCCS BMF Master File : https://nccs-data.urban.org/data.php?ds=bmf
+  * core2019.Rds : All 2019 NCCS core files combined into one data frame : https://nccs-data.urban.org/data.php?ds=core
+  * eo1.csv, eo2.csv, eo3.csv, eo4.csv, eo_xx.csv, eo_pr.csv: IRS BMF files by region from https://www.irs.gov/charities-non-profits/exempt-organizations-business-master-file-extract-eo-bmf 
 * data-wrangling-scripts: all R scripts for data wrangling, including user-defined functions 
   * 00-combining-eo.R : combining all IRS EO files into one file. 
   * 00-making-core-group.R : combining all NCCS core files and only keeping the records that could possibly be part of a group. 
