@@ -3,7 +3,7 @@ Reproducible files for defining a new taxonomy of nonprofit affiliation structur
 
 Folder Structure: 
 
-* data-raw: all raw data files (cannot be pushed to github because files are too larger. I include data soureces here. All data used in analysis is in data-rodeo/.)
+* data-raw: all raw data files (cannot be pushed to github because files are too larger. I include data sources here. All data used in analysis is in data-rodeo/.)
   * bmf-master.rds : 2022 NCCS BMF Master File : https://nccs-data.urban.org/data.php?ds=bmf
   * core2019.Rds : All 2019 NCCS core files combined into one data frame : https://nccs-data.urban.org/data.php?ds=core
   * eo1.csv, eo2.csv, eo3.csv, eo4.csv, eo_xx.csv, eo_pr.csv: IRS BMF files by region from https://www.irs.gov/charities-non-profits/exempt-organizations-business-master-file-extract-eo-bmf 
@@ -19,3 +19,10 @@ Folder Structure:
   * IRS-EO.Rda: Most recent EO BMF from IRS. 
   * dat-soi-group.csv: all orgs in the NCCS SOI files that filed as part of a group
   * dat-group-info.csv: information from all orgs listed in nccs bmf, irs bmf, soi, or core files that could possibly be part of a group. Only information pertaining to group structure has been kept. 
+  * GEN-ParentName-EIN-crosswalk.Rda: Contains two data frames.
+    * `EIN_GEN_crosswalk` is a data frame with `EIN`, `GEN`, `EIN_NAME` and `GEN_NAME`. This is a list of all EIN's that have a known GEN. 
+    * `GEN_ParentName_crosswalk` is a data frame with all known GEN's, the respective parent name, then a list of all EIN's that are known to use that GEN.
+  
+  
+  
+  
