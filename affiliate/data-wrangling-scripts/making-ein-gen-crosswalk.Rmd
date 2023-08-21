@@ -1,0 +1,868 @@
+---
+title: "Making EIN - Group Number - Group Name Crosswalks"
+output: html_notebook
+---
+
+
+## Purpose 
+
+The purpose of this document is to create an EIN-Group Number cross walk, 
+and also to find a Group Name for each Group Number. 
+
+
+## Importing Needed Data
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(nplyr)
+library(ngram)
+
+### Needed functions  -----------------------------
+source("affiliate/data-wrangling-scripts/find-parent-name.R")
+
+
+### Files containing Org information----------------------------
+
+#group info data
+dat.all <- read_csv("affiliate/data-rodeo/ein-group-info.csv")
+
+
+
+### Other Data -------------------------------------
+# ntee crosswalk
+ntee_crosswalk <- read_csv("https://raw.githubusercontent.com/Nonprofit-Open-Data-Collective/mission-taxonomies/main/NTEE-disaggregated/ntee-crosswalk.csv")
+
+
+```
+
+
+
+## Running List of errors that I have found 
+
+### Errors In filings that I have caught
+
+-   EIN 141343303, SIGMA ALPHA EPSILON FRATERNITY - NEW YORK EPSILON, consistently files GEN 0229, which is the GEN for Shriners. The GEN for Sigma Alpha Epsilon is 0228. (For example, https://projects.propublica.org/nonprofits/display_990/300623072/09_2019_prefixes_27-34%2F300623072_201812_990EO_2019092316676129). But weirdly, most Sigma Alpha Epsilon chapters do not file as a group.
+
+-   EIN 66039718, FEDERATED GARDEN CLUBS OF CONNECTICUT INC, should have GEN 1869. I do not know what went wrong in the sraping of the data. ( https://projects.propublica.org/nonprofits/organizations/66039718/202203199349207035/full ).
+
+-   EIN 141762092, should be named MARIE ROSE MANOR HOUSING DEVELOPMENT FUND COMPANY INC. It is incorrectly named American Legion. This error comes from the master BMF (https://projects.propublica.org/nonprofits/organizations/141762092/202213399349300521/full)
+
+-   EIN 356043869, AMERICAN LEGION AUXILLARY, incorrectly filled GEN 0464 in 2022. Their correct GEN is 0964. They filled the correct GEN in previous years. (https://apps.irs.gov/pub/epostcard/cor/356043869_201812_990EZ_2019040216203556.pdf)
+
+-   I believe EIN 166093723, 1290 FORT SCHYLER, should not have a GEN or it should be 0964. I think propublica automatically filled in 1234 as their GEN.
+
+-   Something is up with GEN 0316. Somebody is filing incorrectly and I cannot figure out who it is.
+
+-   EIN 356041906 is an american legion and should be under GEN 0964
+
+-   I believe that people who filed GEN 0001 or 9999 have no idea what they are doing.
+
+-   EIN 310949894, FRATERNAL ORDER OF POLICE, should be GEN 1199.
+
+-   AMERCIAN should be spelled AMERICAN
+
+-   EIN 363878727 is a lodge of the TRANSPORTATION-COMMUNICATIONS UNION and has been filing their GEN incorrectly for years (https://projects.propublica.org/nonprofits/organizations/363878727)
+
+-   EIN 250732450 is a Communication workers or america chapter and should have GEN 1102. They incorrectly filled 1101.
+
+-   EIN 370749249 is a KNIGHTS OF COLUMBUS. Their GEN should be 0188 and they incorrectly filled 1880.
+
+-   EIN 237431899 NASH CAR CLUB of AMERICA. Their GEN should be 2634, and they incorrectly filled 2364.
+
+-   LOGOS GLOBAL NETWORKS INC seems to be a nonprofit that just files for other nonprofits. https://lgnfamily.org/2021/501c3-credentials/
+
+-   EIN 222863449 is INTERNATIONAL ASSOCIATION OF FIRE FIGHTERS. Their GEN should be 0160 and they incorrectly filed as 5015.
+
+-   EIN 10902463 is AMERICAN FEDERATIN OF LABOR & CONGRESS OF INDUSTRIAL ORG and missspelled their name AMERICAN FEDERATION OF LABOR & CONGRESS OF INDUSTRIAL ORG. Their GEN should be 1338. They incorrectly filed 5015.
+
+-   EIN 230599260,344237230, 382170628 are FRATERNAL ORDER OF EAGLES. Their GEN should be 0102. 
+
+-   EIN 146024148, 271717376 is NATIONAL ASSOCIATION OF LETTER CARRIERS. Their GEN should be 0685. They incorrectly filed 5018.
+
+-   EIN 201601433 is WORKERS UNITED. Their GEN should be 5890, but they incorrectly filed 5980.
+
+-   EIN 380417285 is CHI OMEGA FRATERNITY. Their GEN should be 0273. They incorrectly filed as 8061.
+
+-   EIN 10954751 is SOCIETY OF WOMEN ENGINEERS. Their GEN should be 9225. They filled as 9226.
+
+-   EIN 341693831 is BMW CAR CLUB OF AMERICA INC. Thier GEN should be 5390. They filled as "9226".
+
+-   EIN 237030635 is PTA MARYLAND CONGRESS OF PARENTS & TEACHERS INC. Their GEN should be 1999. They filled 9999.
+
+-   EIN 320556488 is ASSOCIATION OF TRADITIONAL HOOKING ARTISTS. Their GEN should be 4363 but they incorrectly filled 9999.
+
+- EIN 990145127 is Hawaii association of teachers. Their GEN should be 2457, the incorrectly filed 2456
+
+- EIN 952938571 is UNITE HERE and should be GEN 8177
+
+- EIN 042765365,  is NATIONAL ACADEMY OF TELEVISION ARTS AND SCIENCES and should be GEN 5966
+
+- EIN 060994119 is PTSA CONNECTICUT INC and should be GEN 1319
+
+- EIN 223944303 is NEWJ MERCER COUNTY PROSECUTORS PBA LOCAL 339 INC which is a local chapter of NEW JERSEY STATE POLICEMENS BENEVOLENT ASSOCIATION. Their GEN should be 6098. The same happened for EIN 262895145 which is the local chapter BOONTON TWP PBA LOCAL 392 INC.
+
+- EIN 237413071 is ANCIENT FREE & ACCEPTED MASONS OF WEST VIRGINIA. Their GEN is 0288. They filled 0028. 
+
+- EIN 351578996, 356053801,596015963,740901577 are a local chapter of INTERNATIONAL ASSOCIATION OF SHEET METAL AIR RAIL & TRANSPORTATION. Their GEN should be 6122.
+
+- EIN 362338589 is american federation of teachers. Their GEN should be 0787
+
+- EIN 391436076 is ROTARY INTERNATIONAL. Their GEN should be 0573. They incorrectly filed 0673.
+
+- EIN 510211565 is CIVITAN CLUB OF COTTAGE HILL which is a local chapter of CIVITAN INTERNATIONAL. Their GEN should be 5431. 
+
+- EIN 651301877 is the group return for ATLANTIC HEALTH SYSTEM INC. Their GEN should be 9704. 
+
+- EIN 911798377 is PTA CONNECTICUT INC ORCHARD HILLS PTA which is a local chapter of PTSA CONNECTICUT CONGRESS. Their GEN should be 1319.
+
+- EIN 953498229 is INDEPENDENT ORDER OF ODDFELLOWS 232 SANTA BARBARA LODGE which is a local chapter of INDEPENDENT ORDER OF ODDFELLOW. Their GEN should be 0028.
+
+- EIN 060994119 is HEAD O'MEADOW PTA which is a local chapter of PTSA CONNECTICUT INC. Thier GEN should be 1319
+
+- EIN 043561068 is BPHC MATTAPAN DEVELOPMENT CORP INC. They should not have a group number. Their tax-exempt status has been revoked - https://apps.irs.gov/app/eos/details/. 
+
+- EIN 204951607 is HOFFMAN PRISON MINISTRY INC. They should not have a GEN. They have been filing GEN 31306 for years. 
+
+- EIN 430768956 is MARK TWAIN COUNTRY CLUB. They have been filing "-" as their GEN on a hand written return which makes me think they computer defaulted to 9999 for their GEN. This org should not have a GEN. 
+
+- EIN 611018135 is mt Washington youth baseball. They should not have GEN. The data defaulted to 9999 but they did not file a GEN. 
+
+- EIN 911802936 is VACAVALLEY ALANO CLUG. The IRS BMF says they use GEN 9999 but if you look at their actual filing, they filed 3139. Also, their name should be Vaca Valley Alano Club
+
+- EIN 202325992 is CONCRETE COUCH. They should not have a GEN. 
+
+- EIN 942633807 is COPPERVIEW COMMUNITY CENTER. It should have no GEN and its Tax Exempt status has been revoked. 
+
+- EIN 272483668 is INTERNATIONAL WATER AND HEALTH ALLIANCES and they should not have a GEN. 
+
+- EIN 930723826 is LA GRANDE SWIM CLUB INC and they should not have a GEN. 
+
+- EIN 943185710 is OAK GROVE SCHOOLS ASSOCIATION they should not have a GEN and their tax exempt status has been revoked. 
+
+- EIN 311351735 is OHIO ASSOCIATION FOR HEALTH CARE QUALITY. they should not have a GEN and their tax exempt status has been revoked. 
+
+- EIN 841522585 is STRAIGHT FROM THE HEART. they should not have a GEN. 
+
+
+```{r}
+
+###### manually fixing a few problematic cases ----------------------------
+
+#Sigma Alpha Epsilon has consistently been using the wrong GEN for years
+dat.all$GEN[dat.all$EIN %in% c("141343303")] <- "0228"
+
+#FEDERATED GARDEN CLUBS OF CONNECTICUT INC, should have GEN 1869
+dat.all$GEN[dat.all$EIN %in% c("66039718")] <- "1869"
+
+# AMERICAN LEGION + AMERICAN LEGION AUXILLARY errors
+dat.all$GEN[dat.all$EIN %in% c("356043869", "166093723", "356041906", "232456733")] <- "0964"
+dat.all$NAME[dat.all$EIN %in% c("113129312")] <- "AMERICAN LEGION"
+
+
+
+
+#MARIE ROSE MANOR HOUSING DEVELOPMENT FUND COMPANY INC.is incorrectly named American Legion.
+dat.all$NAME[dat.all$EIN %in% c("141762092")] <- "MARIE ROSE MANOR HOUSING DEVELOPMENT FUND COMPANY INC. "
+
+#, FRATERNAL ORDER OF POLICE, should be GEN 1199. 
+dat.all$GEN[dat.all$EIN %in% c("310949894", "237175325")] <- "1199"
+
+#INTERNATIONAL ASSOCIATION OF MACHINISTS & AEROSPACE WORKERS
+dat.all$GEN[dat.all$EIN %in% c("42192072")] <- "0264"
+
+# TRANSPORTATION-COMMUNICATIONS UNION
+dat.all$GEN[dat.all$EIN %in% c("363878727")] <- "0683"
+
+# Communication workers or america
+dat.all$GEN[dat.all$EIN %in% c("250732450")] <- "1102"
+
+#  KNIGHTS OF COLUMBUS
+dat.all$GEN[dat.all$EIN %in% c("370749249")] <- "0188"
+
+#   NASH CAR CLUB of AMERICA.
+dat.all$GEN[dat.all$EIN %in% c("237431899")] <- "2634"
+
+
+# ANCIENT FREE & ACCEPTED MASONS OF TEXAS
+dat.all$GEN[dat.all$EIN %in% c("237386608")] <- "0347"
+
+
+#INTERNATIONAL ASSOCIATION OF FIRE FIGHTERS.
+dat.all$GEN[dat.all$EIN %in% c("222863449")] <- "0160"
+
+#INTERNATIONAL ASSOCIATION OF FIRE FIGHTERS.
+dat.all$GEN[dat.all$EIN %in% c("10902463")] <- "1338"
+dat.all$NAME[dat.all$EIN %in% c("10902463")] <- "AMERICAN FEDERATION OF LABOR & CONGRESS OF INDUSTRIAL ORG"
+
+#FRATERNAL ORDER OF EAGLES 
+dat.all$GEN[dat.all$EIN %in% c("230599260", "344237230", "382170628")] <- "0102"
+
+# NATIONAL ASSOCIATION OF LETTER CARRIERS
+dat.all$GEN[dat.all$EIN %in% c("146024148", "271717376")] <- "0685"
+
+
+#WORKERS UNITED
+dat.all$GEN[dat.all$EIN %in% c("201601433")] <- "5980"
+
+#CHI OMEGA FRATERNITY
+dat.all$GEN[dat.all$EIN %in% c("380417285")] <- "0273"
+
+#SOCIETY OF WOMEN ENGINEERS
+dat.all$GEN[dat.all$EIN %in% c("10954751")] <- "9225"
+
+#BMW CAR CLUB OF AMERICA INC.
+dat.all$GEN[dat.all$EIN %in% c("341693831")] <- "5390"
+
+
+# PTA MARYLAND CONGRESS OF PARENTS & TEACHERS INC.
+dat.all$GEN[dat.all$EIN %in% c("237030635")] <- "1999"
+
+#ASSOCIATION OF TRADITIONAL HOOKING ARTISTS.
+dat.all$GEN[dat.all$EIN %in% c("320556488")] <- "4363"
+
+#Hawaii assoc of teachers
+dat.all$GEN[dat.all$EIN %in% c("990145127")] <- "2457"
+
+#UNITE HERE 
+dat.all$GEN[dat.all$EIN %in% c("952938571")] <- "8177"
+
+#NATIONAL ACADEMY OF TELEVISION ARTS AND SCIENCES
+dat.all$GEN[dat.all$EIN %in% c("042765365")] <- "5966"
+
+#PTSA CONNECTICUT INC
+dat.all$GEN[dat.all$EIN %in% c("060994119")] <- "1319"
+
+#ANCIENT FREE & ACCEPTED MASONS OF WEST VIRGINIA. 
+dat.all$GEN[dat.all$EIN %in% c("237413071")] <- "0288"
+
+#NEW JERSEY STATE POLICEMENS BENEVOLENT ASSOCIATION
+dat.all$GEN[dat.all$EIN %in% c("223944303", "262895145")] <- "6098"
+
+#INTERNATIONAL ASSOCIATION OF SHEET METAL AIR RAIL & TRANSPORTATION
+dat.all$GEN[dat.all$EIN %in% c("351578996", "356053801", "596015963","740901577")] <- "6122"
+
+#American federation of teachers
+dat.all$GEN[dat.all$EIN %in% c("362338589")] <- "0787"
+
+#ROTARY INTERNATIONAL
+dat.all$GEN[dat.all$EIN %in% c("391436076")] <- "0573"
+
+#CIVITAN INTERNATIONAL
+dat.all$GEN[dat.all$EIN %in% c("510211565")] <- "5431"
+
+#ATLANTIC HEALTH SYSTEM INC.
+dat.all$GEN[dat.all$EIN %in% c("651301877")] <- "9704"
+
+#PTSA CONNECTICUT CONGRESS
+dat.all$GEN[dat.all$EIN %in% c("911798377")] <- "1319"
+
+#INDEPENDENT ORDER OF ODDFELLOW
+dat.all$GEN[dat.all$EIN %in% c("953498229")] <- "0028"
+
+#NATIONAL ACADEMY OF TELEVISION ARTS AND SCIENCES 
+dat.all$GEN[dat.all$EIN %in% c("042765365")] <- "5966"
+
+#PTSA CONNECTICUT INC. 
+dat.all$GEN[dat.all$EIN %in% c("060994119")] <- "1319"
+
+# BPHC MATTAPAN DEVELOPMENT CORP INC.
+dat.all$GEN[dat.all$EIN %in% c("043561068")] <- NA
+
+# HOFFMAN PRISON MINISTRY INC
+dat.all$GEN[dat.all$EIN %in% c("204951607")] <- NA
+
+#MARK TWAIN COUNTRY CLUB
+dat.all$GEN[dat.all$EIN %in% c("430768956")] <- NA
+
+#mt Washington youth baseball 
+dat.all$GEN[dat.all$EIN %in% c("611018135")] <- NA
+
+# is VACAVALLEY ALANO CLUG
+dat.all$GEN[dat.all$EIN %in% c("911802936")] <- "3139"
+dat.all$NAME[dat.all$EIN %in% c("911802936")] <- "VACA VALLEY ALANO CLUB"
+
+
+# CONCRETE COUCH
+dat.all$GEN[dat.all$EIN %in% c("202325992")] <- NA
+
+#COPPERVIEW COMMUNITY CENTER
+dat.all$GEN[dat.all$EIN %in% c("942633807")] <- NA
+
+# INTERNATIONAL WATER AND HEALTH ALLIANCES
+dat.all$GEN[dat.all$EIN %in% c("272483668")] <- NA
+
+# LA GRANDE SWIM CLUB INC
+dat.all$GEN[dat.all$EIN %in% c("930723826")] <- NA
+
+#OAK GROVE SCHOOLS ASSOCIATION
+dat.all$GEN[dat.all$EIN %in% c("943185710")] <- NA
+
+# OHIO ASSOCIATION FOR HEALTH CARE QUALITY
+dat.all$GEN[dat.all$EIN %in% c("311351735")] <- NA
+
+# STRAIGHT FROM THE HEART
+dat.all$GEN[dat.all$EIN %in% c("841522585")] <- NA
+
+```
+
+
+## Step 1: EIN - GEN Crosswalk 
+
+Step 1.1: verify that each unique EIN has a single GEN
+
+```{r}
+ein2 <- 
+  dat.all %>% 
+  select(EIN, GEN) %>%
+  distinct() %>%
+  na.omit() %>%
+  group_by(EIN) %>%
+  summarise(count = n()) %>% 
+  filter(count > 1)
+
+nrow(ein2) #Great! 
+```
+
+Step 1.2: Store the EIN - GEN Crosswalk as a variable. We will save it as a data set later. We want to fill in some of the blanks in Step 3. 
+
+```{r}
+ein.gen.crosswalk <-
+  dat.all %>% 
+  select(EIN, NAME, GEN) %>% 
+  rename(EIN_NAME = NAME)
+
+```
+
+## Step 2: Building GEN - Parent Name crosswalk
+
+Now that most EINs has a group_num, we can group by group_num to find the most likely parent name.
+
+Order of Operations for finding name for a given GEN when AFFILATION is available,
+
+2.0.  Group By GEN. If the GEN has exactly 1 EIN, then the name of the EIN is the name of the GEN.
+
+
+2.1. If there is a single organization that uses 1, 6, or 8 as their AFFILIATION code (from IRS BMF), then the name of that organization is the name of the parent org. (This is all but ~20 orgs, all of which have some type of typing error in their GEN that i went back a fixed.)
+
+2.2. Fix the errors (in the begining of this doucment)
+
+
+
+
+```{r}
+## Set up -------------------------------------------
+#Group Data By GEN
+all_GEN <- 
+  dat.all %>%
+  #remove data without a group number, we will come back to these later
+  filter(!is.na(GEN)) %>% 
+  #nest by group number
+  nest(.by = GEN) %>%
+  #how many eins in each group
+  hoist(data, 
+        EINs = ("EIN"),
+        .remove = FALSE) %>%
+  #get uniqe EIN's per group number
+  rowwise() %>%
+  mutate(ein_list = (list(unique(EINs)))) %>%
+  mutate(num_eins = length(ein_list)) %>%
+  #extract names
+  hoist(data, 
+        names = ("NAME"),
+        .remove = FALSE)
+
+### STEP 2.0 ------------------------------------------
+GEN_name_crosswalk <- 
+  all_GEN %>% 
+  filter(num_eins == 1) %>%
+  rowwise() %>%
+  mutate(GEN_NAME =  paste(names[[1]])) %>% 
+  select(GEN, GEN_NAME, EINs) 
+
+
+### Step 2.1 -------------------------------
+dat1 <- 
+  all_GEN %>% 
+  filter(!(GEN %in% GEN_name_crosswalk$GEN)) %>%
+  mutate(aff_name = NA)
+
+
+for(i in 1:nrow(dat1)){
+  temp.dat <- dat1$data[[i]]
+  #find where parent org is 
+  where.aff <- which(temp.dat$AFFILIATION %in% c(1, 6, 8))
+  
+  #if there is exactly one parent org, store it 
+  if(length(where.aff) == 1){
+    temp.name <- temp.dat$NAME[where.aff]
+    temp.name <- trimws(str_remove(temp.name, "GROUP RETURN|GRP RETURN")) #remove white space and "group return"
+    dat1$aff_name[i] <- temp.name
+  }
+}
+
+
+GEN_name_crosswalk <-
+  dat1 %>% 
+  filter(!is.na(aff_name)) %>%
+  select(GEN, aff_name, EINs) %>% 
+  rename(GEN_NAME = aff_name) %>%
+  rbind(GEN_name_crosswalk)
+
+
+### STEP 2.2 --------------------------------
+
+dat2 <-
+  dat1 %>% 
+  filter(is.na(aff_name))
+
+dat2$aff_name[dat2$GEN == "5935"] <- "NORTH CAROLINA STATE UNIVERSITY"
+dat2$aff_name[dat2$GEN == "5939"] <- "REGENTS OF THE UNIVERSITY OF MINNESOTA"
+
+GEN_name_crosswalk <-
+  dat2 %>% 
+  filter(!is.na(aff_name)) %>%
+  select(GEN, aff_name, EINs) %>% 
+  rename(GEN_NAME = aff_name) %>%
+  rbind(GEN_name_crosswalk)
+
+
+```
+
+
+
+
+
+### If AFFILIATION variable is not available 
+
+Order of Operations for finding name for a given GEN when AFFILATION is NOT available,
+
+
+0.  Group By GEN. If the GEN has exactly 1 EIN, then the name of the EIN is the name of the GEN.
+
+
+1.  If there is more than one org in the GEN, if all orgs with the same GEN have the *exact* same name, then that is the name of the GEN.
+
+
+2.  If there is \>1 name per GEN, find all the EIN's that says "group return" in either the NAME or NAME_ADDITIONAL. or if the GRP_RTN_FOR_AFFLTS is "Y" (from IRS BMF data).
+
+
+3.  If there is still not GEN name, run the `find_parent_name()` function from the "data-wrangling/find-parent-name.R" script on the vector of org names that use that GEN. This function return the longest, most commonly used phrase in all of the input names. Will return NA if cannot find a meaningful phrase.
+
+
+4.  If there is no "group return", count the frequency of each name appearance. If the **one** name appears most frequently is unique, then that is the GEN name.
+
+
+5.  If there is still not GEN name, run `find_parent_name(min_phrase = 1)`.
+
+
+6. Manually investigate the left overs (there is \~50).
+
+
+```{r, eval = FALSE}
+### WHEN AFFILIATION IS NOT AVAILABLE
+
+### Step 1  ------------------------------------------
+#filter out EIN's from step 0
+dat_by_GEN <- 
+  all_GEN %>% 
+  filter(num_eins > 1) 
+
+#initalize storage
+dat_by_GEN$most_common_name <- NA
+dat_by_GEN$onename <- NA
+
+for(i in 1:nrow(dat_by_GEN)){
+  names_temp <- dat_by_GEN$names[[i]]
+  
+  #first check if they are all identical
+  all.equal <- length(unique(names_temp))
+  #if they are idential, store it
+  if(all.equal ==1){
+    dat_by_GEN$most_common_name[i] <- names_temp[1]
+    dat_by_GEN$onename[i] <- TRUE
+  }
+  else{ #if they are not, store their most common name
+    dat_by_GEN$most_common_name[i] <- table(names_temp) %>% sort() %>% tail(1) %>% names() 
+    dat_by_GEN$onename[i] <- FALSE
+  }
+  
+}
+
+# keep the ones with only one name, rbind to GEN_name_crosswalk
+GEN_name_crosswalk <-
+  dat_by_GEN %>% 
+  filter(onename) %>%
+  select(GEN, most_common_name, EINs) %>% 
+  rename(GEN_NAME = most_common_name) %>%
+  rbind(GEN_name_crosswalk)
+
+
+### Step 2  ------------------------------------------
+
+#for each group number, keep the ones with multiple names
+dat5 <- 
+  dat_by_GEN %>%
+  filter(!onename)  %>%
+  mutate(contains_gn = FALSE,
+         contains_gn_name = NA)
+
+for(i in 1:nrow(dat5)){
+  
+  temp.name <- NA
+  
+  #store the nested data
+  tempdat <- 
+    dat5$data[[i]] 
+  
+  #does it have exactly one with group return
+  # or does the GRP_RET_FOR_AFFLTS have exactly one yes
+  if(sum(tempdat$HAS_GROUP_RETURN) == 1){
+    temp.name <- tempdat$NAME[tempdat$HAS_GROUP_RETURN]
+    dat5$contains_gn[i] <- TRUE
+  }else if(sum(tempdat$GRP_RET_FOR_AFFLTS == "Y", na.rm = T) == 1){ 
+    n <- which(tempdat$GRP_RET_FOR_AFFLTS == "Y")
+    temp.name <- tempdat$NAME[n]
+    dat5$contains_gn[i] <- TRUE
+  }
+  
+  
+  #if it contains_gn, then add the temp.name, otherwise do nothing
+  if(dat5$contains_gn[i] & !is.na(temp.name)){
+    #remove the words "group return" and trailing/leading whitespace 
+    dat5$contains_gn_name[i] <- trimws(str_remove(temp.name, "GROUP RETURN|GRP RETURN"))
+  }
+    
+}
+
+GEN_name_crosswalk <-
+  dat5 %>%
+  filter(contains_gn == TRUE) %>% 
+  #bind to GEN_name_crosswalks
+  select(GEN, contains_gn_name, EINs) %>%
+  rename(GEN_NAME = contains_gn_name) %>%
+  rbind(GEN_name_crosswalk)
+
+
+### Step 3  ------------------------------------------
+
+# If there is still not GEN name, run the `find_parent_name()` function 
+# on the combined NAME and SORT_NAME
+dat6 <- 
+  dat5 %>% 
+  filter(contains_gn == FALSE)
+
+dat6$combine_name <- vector(mode = "list", length = nrow(dat6))
+dat6$parent_name <- NA
+
+#there will be several warnings in this loop, that is fine
+for(i in 1:nrow(dat6)){
+  
+  #get data
+  temp.dat <- dat6$data[[i]]
+  
+  temp1 <- temp.dat$NAME
+  temp2 <- temp.dat$NAME_ADDITIONAL
+  
+  #combine name and name_additinal into one string
+  if(!all(is.na(temp2))){
+    temp2.combine = ifelse(is.na(temp2), "", temp2)
+    dat6$combine_name[[i]] <- (paste(temp1, temp2.combine))
+  }else{
+    dat6$combine_name[[i]] <- temp1
+  }
+  
+  #find parent name 
+  dat6$parent_name[i] <- find_parent_name(dat6$combine_name[[i]])
+}
+
+GEN_name_crosswalk <- 
+  dat6 %>%
+  filter(!is.na(parent_name)) %>%
+  select(GEN, parent_name, EINs) %>%
+  rename(GEN_NAME = parent_name) %>%
+  rbind(GEN_name_crosswalk)
+
+### Step 4 -------------------------------------
+#keep only the ones that do not have a unique Group Return Name
+dat7 <-
+  dat6 %>%
+  filter(is.na(parent_name))
+
+
+## Find if the name used most often is unique
+
+#initialize storage
+dat7.extra <- vector(mode = "list", length = nrow(dat7))
+dat7$onename_unique <- NA
+dat7$max_name <- NA
+
+for(i in 1:nrow(dat7)){
+  names_temp <- dat7$names[[i]]
+  dat7.extra[[i]] <- table(names_temp) %>% sort() 
+  #is the maximum unique?
+  dat7$onename_unique[i] <- dat7.extra[[i]][length(dat7.extra[[i]])] != dat7.extra[[i]][length(dat7.extra[[i]]) -1 ]
+  #store the max name to retrieve later 
+  dat7$max_name[i] <-  names(dat7.extra[[i]][length(dat7.extra[[i]])] )
+}
+
+#If the most commonly used name is unique, store it
+
+GEN_name_crosswalk <-
+  dat7 %>% 
+  filter(onename_unique == TRUE) %>%
+  select(GEN, max_name, EINs) %>% 
+  rename(GEN_NAME = max_name) %>%
+  rbind(GEN_name_crosswalk)
+
+### Step 5--------------------------------------
+dat8 <-
+  dat7 %>%
+  filter(!onename_unique)
+
+
+dat8$combine_name1 <- vector(mode = "list", length = nrow(dat8))
+dat8$parent_name1 <- NA
+
+#there will be alot of warnings, that is okay
+for(i in 1:nrow(dat8)){
+   #get data
+  temp.dat <- dat8$data[[i]]
+  
+  temp1 <- temp.dat$NAME
+  temp2 <- temp.dat$NAME_ADDITIONAL
+  
+  #combine name and name_additinal into one string
+  if(!all(is.na(temp2))){
+    temp2.combine = ifelse(is.na(temp2), "", temp2)
+    dat8$combine_name1[[i]] <- (paste(temp1, temp2.combine))
+  }else{
+    dat8$combine_name1[[i]] <- temp1
+  }
+  
+  #find parent name 
+  dat8$parent_name1[i] <- find_parent_name(dat8$combine_name1[[i]], min_phrase = 1)
+}
+  
+
+
+GEN_name_crosswalk <- 
+  dat8 %>%
+  filter(!is.na(parent_name1)) %>%
+  filter(nchar(parent_name1) > 1) %>%
+  select(GEN,parent_name1, ein_list ) %>%
+  rename(GEN_NAME = parent_name1,
+         EINs = ein_list) %>%
+  rbind(GEN_name_crosswalk)
+
+
+
+### Step 6 -----------------------------------
+dat.leftover <- 
+  dat8 %>% 
+  filter(!GEN %in% GEN_name_crosswalk$GEN) %>% 
+  mutate(name_manual = NA) %>% 
+  arrange(GEN)
+
+#dat.leftover$name_short[dat.leftover$GROUP == "3872"] <- "SAKYA THUPTEN DARGYE LING CENTER FOR BUDDHIST STUDIES MEDITATION"
+#dat.leftover$name_short[dat.leftover$GROUP == "5087"] <- "VICTORY MINISTRIES"
+#dat.leftover$name_short[dat.leftover$GROUP == "8250"] <- "OPEN DOOR CHURCH"
+#dat.leftover$name_short[dat.leftover$GROUP == "7050"] <- "TULSA CHRISTIAN CENTER CHURCH"
+
+
+dat.leftover$name_short[dat.leftover$GROUP == "4364"] <- "CALVARY APOSTOLIC ASSEMBLY INC"
+dat.leftover$name_short[dat.leftover$GROUP == "1442"] <- "MESSIAH CHRISTIAN CHURCH INC"
+dat.leftover$name_short[dat.leftover$GROUP == "1484"] <- "A PLUS FOR KIDS"
+dat.leftover$name_short[dat.leftover$GROUP == "1912"] <- "FREEWILL HOLINESS CHURCHES INC"
+dat.leftover$name_short[dat.leftover$GROUP == "1442"] <- "PENTECOSTAL FAITH CHURCH"
+
+```
+
+
+## Look through the list of EIN's to see if the ones that don't have GEN's truly shouldn't have them
+
+
+1. Get all EIN's that don't have a GEN.
+
+2. In this set, check if the name exactly matches a GEN_NAME in `GEN_name_crosswalk`. If there is an exact match, assign the respective GEN. Interestingly, alot of EIN's that have "GROUP RETURN" in them, also have an exact match in the GEN_NAME. A substantial number of those that had exact matches were Shriners. 
+
+3. Remove all words like "Group Return", "INC", "CORP" from both names and try matching again. 
+
+4. Look at the ones that have group retrn in their name or FRCD == 3 (from nccs bmf). Scrape Propublica to get these GEN if they exist
+
+```{r}
+### Step 1 -------------------------------------------
+no.gen <- dat.all %>% filter(is.na(GEN))
+
+### Step 2 --------------------------------------
+no.gen$gen_name_extact_match <- NA
+
+for(i in 1:nrow(no.gen)){
+  temp.name <- no.gen$NAME[i]
+  where.match <- temp.name == GEN_name_crosswalk$GEN_NAME
+  
+  if(sum(where.match, na.rm = TRUE) == 1 ){
+    no.gen$gen_name_extact_match[i] <- temp.name
+    no.gen$GEN[i] <- GEN_name_crosswalk$GEN[where.match]
+  }
+}
+
+
+### Step 3--------------------------
+pattern <- "GROUP RETURN|GRP RETURN|INC"
+gen.names <- trimws(str_remove(GEN_name_crosswalk$GEN_NAME, pattern))
+no.gen3 <- 
+  no.gen %>% 
+  filter(is.na(GEN)) %>% 
+  mutate(name_clean = trimws(str_remove(NAME, pattern)))
+
+for(i in 1:nrow(no.gen3)){
+  temp.name <- no.gen3$name_clean[i]
+  where.match <- temp.name == gen.names
+  
+  if(sum(where.match, na.rm = TRUE) == 1 ){
+    no.gen3$gen_name_extact_match[i] <- temp.name
+    no.gen3$GEN[i] <- GEN_name_crosswalk$GEN[where.match]
+  }
+}
+
+# add these to the dat.all
+no.gen3.yes <- no.gen3 %>% filter(!is.na(GEN))
+for(i in 1:nrow(no.gen3.yes)){
+  dat.all$GEN[dat.all$EIN == no.gen3.yes$EIN[i]] <- no.gen3.yes$GEN[i]
+}
+
+
+### Step 4 
+source("affiliate/data-wrangling-scripts/scrape-gen.R")
+no.gen4 <-
+  no.gen3 %>% 
+  filter(is.na(GEN))  %>%
+  filter(HAS_GROUP_RETURN | FRCD == 3) %>%
+  mutate(gen2 = NA)
+
+for(i in 1:nrow(no.gen4)){
+  temp.ein <- no.gen4$EIN[i]
+  no.gen4$gen2[i] <- scrape_gen(temp.ein)
+
+}
+#save the ones with a GEN in the all.dat
+no.gen4.yes <- no.gen4 %>% filter(!is.na(GEN))
+for(i in 1:nrow(no.gen3.yes)){
+  dat.all$GEN[dat.all$EIN == no.gen4.yes$EIN[i]] <- no.gen4.yes$GEN[i]
+}
+
+
+```
+
+## Repeat steps 1 and 2 with these new filled in GEN's. 
+
+Do Step 2 first to get a name to later append onto step 1. 
+
+
+### Repeat Step 2
+```{r}
+## Set up -------------------------------------------
+#Group Data By GEN
+all_GEN <- 
+  dat.all %>%
+  #remove data without a group number, we will come back to these later
+  filter(!is.na(GEN)) %>% 
+  #nest by group number
+  nest(.by = GEN) %>%
+  #how many eins in each group
+  hoist(data, 
+        EINs = ("EIN"),
+        .remove = FALSE) %>%
+  #get uniqe EIN's per group number
+  rowwise() %>%
+  mutate(ein_list = (list(unique(EINs)))) %>%
+  mutate(num_eins = length(ein_list)) %>%
+  #extract names
+  hoist(data, 
+        names = ("NAME"),
+        .remove = FALSE)
+
+### STEP 2.0 ------------------------------------------
+GEN_name_crosswalk <- 
+  all_GEN %>% 
+  filter(num_eins == 1) %>%
+  rowwise() %>%
+  mutate(GEN_NAME =  paste(names[[1]])) %>% 
+  select(GEN, GEN_NAME, EINs) 
+
+
+### Step 2.1 -------------------------------
+dat1 <- 
+  all_GEN %>% 
+  filter(!(GEN %in% GEN_name_crosswalk$GEN)) %>%
+  mutate(aff_name = NA)
+
+
+for(i in 1:nrow(dat1)){
+  temp.dat <- dat1$data[[i]]
+  #find where parent org is 
+  where.aff <- which(temp.dat$AFFILIATION %in% c(1, 6, 8))
+  
+  #if there is exactly one parent org, store it 
+  if(length(where.aff) == 1){
+    temp.name <- temp.dat$NAME[where.aff]
+    temp.name <- trimws(str_remove(temp.name, "GROUP RETURN|GRP RETURN")) #remove white space and "group return"
+    dat1$aff_name[i] <- temp.name
+  }
+}
+
+
+GEN_name_crosswalk <-
+  dat1 %>% 
+  filter(!is.na(aff_name)) %>%
+  select(GEN, aff_name, EINs) %>% 
+  rename(GEN_NAME = aff_name) %>%
+  rbind(GEN_name_crosswalk)
+
+
+### STEP 2.2 --------------------------------
+
+dat2 <-
+  dat1 %>% 
+  filter(is.na(aff_name))
+
+dat2$aff_name[dat2$GEN == "5935"] <- "NORTH CAROLINA STATE UNIVERSITY"
+dat2$aff_name[dat2$GEN == "5939"] <- "REGENTS OF THE UNIVERSITY OF MINNESOTA"
+
+GEN_name_crosswalk <-
+  dat2 %>% 
+  filter(!is.na(aff_name)) %>%
+  select(GEN, aff_name, EINs) %>% 
+  rename(GEN_NAME = aff_name) %>%
+  rbind(GEN_name_crosswalk)
+
+
+```
+
+
+### Repeat step 1
+
+```{r}
+ein.gen.crosswalk.final <-
+  dat.all %>% 
+  #only keep those with GEN's
+  filter(!is.na(GEN)) %>%
+  select(EIN, NAME, GEN) %>% 
+  rename(EIN_NAME = NAME) %>% 
+  #get GEN NAME 
+  left_join(GEN_name_crosswalk %>% select(GEN, GEN_NAME))
+
+```
+
+
+
+
+
+## Save these crosswalks 
+
+```{r}
+save()
+
+
+```
