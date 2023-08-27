@@ -18,7 +18,7 @@ Folder Structure:
   * dat-core-group.RDA: all data from NCCS core files only keeping vairables that are related to group number.
   * IRS-EO.Rda: Most recent EO BMF from IRS. 
   * dat-soi-group.csv: all orgs in the NCCS SOI files that filed as part of a group
-  * dat-group-info.csv: information from all orgs listed in nccs bmf, irs bmf, soi, or core files that could possibly be part of a group. Only information pertaining to group structure has been kept. 
+  * dat-group-info.Rda: information from all orgs listed in nccs bmf, irs bmf, soi, or core files that could possibly be part of a group. Variables in all data sets have been consolidated. 
   * GEN-ParentName-EIN-crosswalk.Rda: Contains two data frames.
     * `EIN_GEN_crosswalk` is a data frame with `EIN`, `GEN`, `EIN_NAME` and `GEN_NAME`. This is a list of all EIN's that have a known GEN. 
     * `GEN_ParentName_crosswalk` is a data frame with all known GEN's, the respective parent name, then a list of all EIN's that are known to use that GEN.
