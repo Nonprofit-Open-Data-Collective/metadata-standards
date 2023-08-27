@@ -5,7 +5,7 @@
 ## 
 library(tidyverse)
 library(knitr)
-bmf.master <- readRDS("affiliate/data-raw/bmf-master.rds")
+bmf.master <- read_csv("https://nccsdata.s3.amazonaws.com/raw/bmf/2023-08-BMF.csv")
 load("affiliate/data-rodeo/IRS-EO.Rda")
 load("affiliate/data-rodeo/dat-core-group.RDA")
 dat.soi <- read_csv("affiliate/data-rodeo/dat-soi-group.csv")
@@ -13,13 +13,18 @@ dat.soi <- read_csv("affiliate/data-rodeo/dat-soi-group.csv")
 #any EIN in bmf master that could possibly be part of a group return
 bmf.ein <-
   bmf.master%>%
-  mutate(GEN = as.numeric(GEN))  %>%
-  filter(!is.na(GEN) | 
-           FRCD %in% c("30", "3")| 
-           grepl("Group Return", NAME, ignore.case = T),
-         grepl("Group Return", SEC_NAME, ignore.case = T)) %>% 
-  #only keep columns that are useful 
-  select(EIN:ZIP5, RULEDATE, FIPS, FNDNCD )
+  #format for joining later
+  mutate(GEN = as.character(GROUP)) %>% 
+  mutate_at(vars(c(EIN, SUBSECTION, CLASSIFICATION,RULING, FOUNDATION, ACTIVITY, STATUS, FILING_REQ_CD, ACCT_PD )), 
+            as.character) %>% 
+  select(-GROUP) %>%
+  #keep only the ones in a group
+  rowwise() %>%
+  filter(GEN != 0 | 
+           FILING_REQ_CD == "3" | 
+           grepl("Group Return", NAME, ignore.case = T) | 
+           grepl("Group Return", SORT_NAME, ignore.case = T)| 
+           AFFILIATION != 3)
 
 
 #Core files have already screened for possible group return
@@ -67,23 +72,22 @@ df2<-
   select(-starts_with("ISSR"), -year, - soi.year) 
 
 
-#Combining SEC_NAME, SORT_NAME, DBA_NAME
-df2$NAME_ADDITIONAL <- NA
-
-
-for(i in 1:nrow(df2)){
-  #Find additional names and only keep the unique ones
-  temp.names <- unique(c(df2$SEC_NAME[i], df2$SORT_NAME[i], df2$DBA_NAME[i]))
+#Combining SORT_NAME, DBA_NAME
+add_name_function <- function(dba, sort){
+  temp.names <- unique(c(dba, sort))
   temp.names <- temp.names[!is.na(temp.names)]
-  
-  df2$NAME_ADDITIONAL[i] <- paste(temp.names, collapse = " ")
+  return(paste(temp.names, collapse = " "))
 }
 
-df2 <- df2 %>% select(-c(SEC_NAME, SORT_NAME, DBA_NAME))
+df3 <- 
+  df2 %>% 
+  rowwise() %>%
+  mutate(NAME_ADDITIONAL  = add_name_function(DBA_NAME, SORT_NAME))
+  
 
 #Get getting if the EIN  has group return in the name or additional name 
-df2 <-
-  df2 %>% 
+df3 <-
+  df3 %>% 
   mutate(HAS_GROUP_RETURN =
            base::grepl(pattern = "GROUP RETURN|GRP RETURN", x = NAME, ignore.case = TRUE) |
            base::grepl(pattern = "GROUP RETURN|GRP RETURN", x = NAME_ADDITIONAL, ignore.case = TRUE))
@@ -91,29 +95,23 @@ df2 <-
 
 # When GEN is missing, fill it in with GROUP
 # if both GEN and GROUP are present, I've verified that there are none that do not match
-df2 <- df2 %>%   
+df3 <- df3 %>%   
   mutate(GEN = ifelse(is.na(GEN), GROUP, GEN)) %>%
   select(-GROUP)
 
 
 #do the same thing with GEN and GRP_EXMPT_NUM
 #there are two errors in GRP_EXMPT_NUM I am manually fixing
-df2$GRP_EXMPT_NUM[df2$EIN == "344237230"] <- 0102
-df2$GRP_EXMPT_NUM[df2$EIN == "990145127"] <- 2457
+df3$GRP_EXMPT_NUM[df2$EIN == "344237230"] <- 0102
+df3$GRP_EXMPT_NUM[df2$EIN == "990145127"] <- 2457
 
-df2 <- 
-  df2 %>%
+df3 <- 
+  df3 %>%
   mutate(GRP_EXMPT_NUM = str_pad(GRP_EXMPT_NUM, 4, pad = "0", side = "left")) %>% 
   mutate(GEN = ifelse(is.na(GEN), GRP_EXMPT_NUM, GEN))  %>% 
   select(-GRP_EXMPT_NUM)
 
 
-#same thing for subsection code, ruledate
-df2 <- df2 %>%   
-  mutate(SUBSECTION = ifelse(is.na(SUBSECTION), SUBSECCD, SUBSECTION)) %>%
-  select(-SUBSECCD) %>%
-  mutate(SUBSECTION = ifelse(is.na(RULEDATE), RULING, RULEDATE)) %>%
-  select(-RULING) 
 
 #same thing for affiliation and afcd, but there are 3 that disagree,
 #but they disagree in a way that the affiliation code is acceptable 
@@ -121,20 +119,34 @@ df2 <- df2 %>%
 #EIN 264373000 has AFFLIATION = 9 and AFCD = 7. Both are subordinate designations and this EIN is clearly a religious org so we keep with AFFLIATION = 9
 #EIN 650839302 has AFFLIATION = 8 and AFCD = 6. Both are central organization, and this EIN is clearly a church so we keep with AFFLIATION = 8
 
-df2 <- df2 %>%   
-  mutate(SUBSECTION = ifelse(is.na(AFFILIATION), AFCD, AFFILIATION)) %>%
+df3 <- df3 %>%   
+  mutate(AFFILIATION = as.character(AFFILIATION)) %>%
+  mutate(AFFILIATION = ifelse(is.na(AFFILIATION), AFCD, AFFILIATION)) %>%
   select(-AFCD)
+
+# SPLITTING AFFILATION into AFF_ROLL and RELIGIOUS
+#AFF_ROLL is the roll that orgs plays in their respective affiliation structure: independent, parent, or subordinate
+df3 <- 
+  df3 %>% 
+  rowwise() %>%
+  mutate(AFF_ROLL = case_when(
+    AFFILIATION == "3" ~ "independent",
+    AFFILIATION %in% c("1", "6", "8") ~ "parent",
+    AFFILIATION %in% c("2", "7", "9") ~ "subordinate"
+  )) %>% 
+  mutate(RELIGIOUS = ifelse(
+    AFFILIATION == "8" | FOUNDATION == "10" | FILING_REQ_CD == "13" | (SUBSECTION == "3" & CLASSIFICATION == "7") | SUBSECTION == "40",
+    "yes", "no"))
   
 
 #renaming some variables to more clearly name where they came from 
-df2 <- 
-  df2 %>%
-  rename(NTEE_NCCS = NTEEFINAL,
-         NTEE_IRS = NTEE_CD) 
+df3 <- 
+  df3 %>%
+  rename(NTEE_IRS = NTEE_CD) 
 
 
 
 
 #save 
-write_csv(df2, "affiliate/data-rodeo/ein-group-info.csv")
+write_csv(df3, "affiliate/data-rodeo/ein-group-info.csv")
 
