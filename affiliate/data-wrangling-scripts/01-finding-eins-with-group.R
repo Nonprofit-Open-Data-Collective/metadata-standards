@@ -17,6 +17,15 @@ bmf.ein <-
   mutate(GEN = str_pad(as.character(GROUP), width = 4, side = "left", pad = "0")) %>% 
   mutate_at(vars(c(EIN, SUBSECTION, CLASSIFICATION,RULING, FOUNDATION, ACTIVITY, STATUS, FILING_REQ_CD, ACCT_PD )), 
             as.character) %>% 
+  mutate(SUBSECTION = str_pad(SUBSECTION, 2, pad = "0", side = "left"),
+         CLASSIFICATION = str_pad(CLASSIFICATION, 4, pad = "0", side = "left"),
+         RULING = str_pad(RULING, 6, pad = "0", side = "left"),
+         FOUNDATION = str_pad(FOUNDATION, 4, pad = "0", side = "left"),
+         ACTIVITY = str_pad(ACTIVITY, 8, pad = "0", side = "left"),
+         STATUS = str_pad(STATUS, 2, pad = "0", side = "left"),
+         FILING_REQ_CD = str_pad(FILING_REQ_CD, 2, pad = "0", side = "left"),
+         ACCT_PD = str_pad(ACCT_PD, 2, pad = "0", side = "left")
+  ) %>% 
   select(-GROUP) %>%
   #keep only the ones in a group
   rowwise() %>%
@@ -148,5 +157,6 @@ df3 <-
 
 
 #save 
-save(df3, file = "affiliate/data-rodeo/ein-group-info.Rda")
+dat.all.with.group <- df3
+save(dat.all.with.group, file = "affiliate/data-rodeo/ein-group-info.Rda")
 
