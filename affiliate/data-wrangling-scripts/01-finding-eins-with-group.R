@@ -14,13 +14,13 @@ dat.soi <- read_csv("affiliate/data-rodeo/dat-soi-group.csv")
 bmf.ein <-
   bmf.master%>%
   #format for joining later
-  mutate(GEN = as.character(GROUP)) %>% 
+  mutate(GEN = str_pad(as.character(GROUP), width = 4, side = "left", pad = "0")) %>% 
   mutate_at(vars(c(EIN, SUBSECTION, CLASSIFICATION,RULING, FOUNDATION, ACTIVITY, STATUS, FILING_REQ_CD, ACCT_PD )), 
             as.character) %>% 
   select(-GROUP) %>%
   #keep only the ones in a group
   rowwise() %>%
-  filter(GEN != 0 | 
+  filter(GEN != "0000" | 
            FILING_REQ_CD == "3" | 
            grepl("Group Return", NAME, ignore.case = T) | 
            grepl("Group Return", SORT_NAME, ignore.case = T)| 
@@ -148,5 +148,5 @@ df3 <-
 
 
 #save 
-write_csv(df3, "affiliate/data-rodeo/ein-group-info.csv")
+save(df3, file = "affiliate/data-rodeo/ein-group-info.Rda")
 
