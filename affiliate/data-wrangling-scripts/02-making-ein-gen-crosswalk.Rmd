@@ -25,13 +25,12 @@ source("affiliate/data-wrangling-scripts/find-parent-name.R")
 ### Files containing Org information----------------------------
 
 #group info data
-dat.all <- read_csv("affiliate/data-rodeo/ein-group-info.csv")
+load("affiliate/data-rodeo/ein-group-info.Rda")
+dat.all <- distinct(dat.all.with.group)
+rm(dat.all.with.group)
 
-
-
-### Other Data -------------------------------------
-# ntee crosswalk
-ntee_crosswalk <- read_csv("https://raw.githubusercontent.com/Nonprofit-Open-Data-Collective/mission-taxonomies/main/NTEE-disaggregated/ntee-crosswalk.csv")
+#basic wrangling to add most recent year 
+dat.all$MOST_RECENT_YEAR_FILED <- substr(dat.all$RULING, 1, 4)
 
 
 ```
@@ -143,6 +142,8 @@ ntee_crosswalk <- read_csv("https://raw.githubusercontent.com/Nonprofit-Open-Dat
 - EIN 311351735 is OHIO ASSOCIATION FOR HEALTH CARE QUALITY. they should not have a GEN and their tax exempt status has been revoked. 
 
 - EIN 841522585 is STRAIGHT FROM THE HEART. they should not have a GEN. 
+
+- I think EIN 350868188 had some type of error when being uploaded to the master bmf. They are definitely "UNIVERSITY OF NOTRE DAME DU LAC" but their listing in the bmf says "SOCIETY FOR NEUROSCIENCE".  (https://projects.propublica.org/nonprofits/organizations/350868188)
 
 
 ```{r}
@@ -304,6 +305,11 @@ dat.all$GEN[dat.all$EIN %in% c("311351735")] <- NA
 # STRAIGHT FROM THE HEART
 dat.all$GEN[dat.all$EIN %in% c("841522585")] <- NA
 
+#Notre Dame
+dat.all$NAME[dat.all$EIN %in% c("350868188")] <- "UNIVERSITY OF NOTRE DAME DU LAC"
+dat.all$NAME_ADDITIONAL[dat.all$EIN %in% c("350868188")] <- NA
+
+
 ```
 
 
@@ -321,7 +327,8 @@ ein2 <-
   summarise(count = n()) %>% 
   filter(count > 1)
 
-nrow(ein2) #Great! 
+nrow(ein2) #Theres 10 of these, I can deal with them later when I look at the other crosswalk to build up more evidence as to where they should be
+
 ```
 
 Step 1.2: Store the EIN - GEN Crosswalk as a variable. We will save it as a data set later. We want to fill in some of the blanks in Step 3 using the data from step 2. 
@@ -329,14 +336,14 @@ Step 1.2: Store the EIN - GEN Crosswalk as a variable. We will save it as a data
 ```{r}
 ein.gen.crosswalk <-
   dat.all %>% 
-  select(EIN, NAME, GEN) %>% 
+  select(EIN, NAME, GEN, AFFILIATION, AFF_ROLL, RELIGIOUS, MOST_RECENT_YEAR_FILED) %>% 
   rename(EIN_NAME = NAME)
 
 ```
 
 ## Step 2: Building GEN - Parent Name crosswalk
 
-Now that most EINs have a group_num, we can group by GEN to find the most likely parent name for each GEN.
+Now that most EINs have a group number, we can group by GEN to find the most likely parent name for each GEN.
 
 Order of Operations for finding name for a given GEN when AFFILATION is available,
 
@@ -356,6 +363,7 @@ all_GEN <-
   dat.all %>%
   #remove data without a group number, we will come back to these later
   filter(!is.na(GEN)) %>% 
+  filter(GEN != "0000") %>% 
   #nest by group number
   nest(.by = GEN) %>%
   #how many eins in each group
@@ -376,8 +384,8 @@ GEN_name_crosswalk <-
   all_GEN %>% 
   filter(num_eins == 1) %>%
   rowwise() %>%
-  mutate(GEN_NAME =  paste(names[[1]])) %>% 
-  select(GEN, GEN_NAME, EINs) 
+  mutate(AFF_NAME =  paste(names[[1]])) %>% 
+  select(GEN, AFF_NAME, EINs) 
 
 
 ### Step 2.1 -------------------------------
@@ -390,12 +398,13 @@ dat1 <-
 for(i in 1:nrow(dat1)){
   temp.dat <- dat1$data[[i]]
   #find where parent org is 
-  where.aff <- which(temp.dat$AFFILIATION %in% c(1, 6, 8))
+  where.aff <- which(temp.dat$AFF_ROLL == "parent")
+  
+  unique.names <- unique(temp.dat$NAME[where.aff]) #check for duplicate records
   
   #if there is exactly one parent org, store it 
-  if(length(where.aff) == 1){
-    temp.name <- temp.dat$NAME[where.aff]
-    temp.name <- trimws(str_remove(temp.name, "GROUP RETURN|GRP RETURN")) #remove white space and "group return"
+  if(length(unique.names) == 1){
+    temp.name <- trimws(str_remove(unique.names, "GROUP RETURN|GRP RETURN")) #remove white space and "group return"
     dat1$aff_name[i] <- temp.name
   }
 }
@@ -405,7 +414,7 @@ GEN_name_crosswalk <-
   dat1 %>% 
   filter(!is.na(aff_name)) %>%
   select(GEN, aff_name, EINs) %>% 
-  rename(GEN_NAME = aff_name) %>%
+  rename(AFF_NAME = aff_name) %>%
   rbind(GEN_name_crosswalk)
 
 
@@ -415,14 +424,24 @@ dat2 <-
   dat1 %>% 
   filter(is.na(aff_name))
 
-dat2$aff_name[dat2$GEN == "5935"] <- "NORTH CAROLINA STATE UNIVERSITY"
+#every org is subordinate, but they all have the exact same name
+dat2$aff_name[dat2$GEN == "5935"] <- "NORTH CAROLINA STATE UNIVERSITY" 
 dat2$aff_name[dat2$GEN == "5939"] <- "REGENTS OF THE UNIVERSITY OF MINNESOTA"
+dat2$aff_name[dat2$GEN == "3735"] <- "PROJECT MANAGEMENT INSTITUTE"
+dat2$aff_name[dat2$GEN == "8505"] <- "PTA TENNESSEE CONGRESS OF PARENTS & TEACHERS INC"
+
+#In 2021 this org had a name change. See URL: https://projects.propublica.org/nonprofits/organizations/420594470/202243189349303969/full
+dat2$aff_name[dat2$GEN == "0125"] <- "BETTERLIFE"
+
+
+
+
 
 GEN_name_crosswalk <-
   dat2 %>% 
   filter(!is.na(aff_name)) %>%
   select(GEN, aff_name, EINs) %>% 
-  rename(GEN_NAME = aff_name) %>%
+  rename(AFF_NAME = aff_name) %>%
   rbind(GEN_name_crosswalk)
 
 
@@ -493,7 +512,7 @@ GEN_name_crosswalk <-
   dat_by_GEN %>% 
   filter(onename) %>%
   select(GEN, most_common_name, EINs) %>% 
-  rename(GEN_NAME = most_common_name) %>%
+  rename(AFF_NAME = most_common_name) %>%
   rbind(GEN_name_crosswalk)
 
 
@@ -683,22 +702,20 @@ dat.leftover$name_short[dat.leftover$GROUP == "1442"] <- "PENTECOSTAL FAITH CHUR
 
 1. Get all EIN's that don't have a GEN.
 
-2. In this set, check if the name exactly matches a GEN_NAME in `GEN_name_crosswalk`. If there is an exact match, assign the respective GEN. Interestingly, alot of EIN's that have "GROUP RETURN" in them, also have an exact match in the GEN_NAME. A substantial number of those that had exact matches were Shriners. 
+2. In this set, check if the name exactly matches a GEN_NAME in `GEN_name_crosswalk`. If there is an exact match, assign the respective GEN. Interestingly, alot of EIN's that have "GROUP RETURN" in them, also have an exact match in the GEN_NAME. Add these GEN to `dat.all`. 
 
-3. Remove all words like "Group Return", "INC", "CORP" from both names and try matching again. 
-
-4. Look at the ones that have group retrn in their name or FRCD == 3 (from nccs bmf). Scrape Propublica to get these GEN if they exist
+3. Look at the ones that have group return in their name or FILING_REQ_CD == 3 (from nccs bmf) or they have AFFILIATION == 6, 7, or 8. Scrape Propublica to get these GEN if they exist.  Add these GEN to `dat.all`. (I would like to search through AFFILIATION ==9, but at the moment there are too many (~30k) to be able to do efficently)
 
 ```{r}
 ### Step 1 -------------------------------------------
-no.gen <- dat.all %>% filter(is.na(GEN))
+no.gen <- dat.all %>% filter(is.na(GEN) | GEN == "0000")
 
 ### Step 2 --------------------------------------
 no.gen$gen_name_extact_match <- NA
 
 for(i in 1:nrow(no.gen)){
   temp.name <- no.gen$NAME[i]
-  where.match <- temp.name == GEN_name_crosswalk$GEN_NAME
+  where.match <- temp.name == GEN_name_crosswalk$AFF_NAME
   
   if(sum(where.match, na.rm = TRUE) == 1 ){
     no.gen$gen_name_extact_match[i] <- temp.name
@@ -706,38 +723,21 @@ for(i in 1:nrow(no.gen)){
   }
 }
 
-
-### Step 3--------------------------
-pattern <- "GROUP RETURN|GRP RETURN|INC"
-gen.names <- trimws(str_remove(GEN_name_crosswalk$GEN_NAME, pattern))
-no.gen3 <- 
-  no.gen %>% 
-  filter(is.na(GEN)) %>% 
-  mutate(name_clean = trimws(str_remove(NAME, pattern)))
-
-for(i in 1:nrow(no.gen3)){
-  temp.name <- no.gen3$name_clean[i]
-  where.match <- temp.name == gen.names
-  
-  if(sum(where.match, na.rm = TRUE) == 1 ){
-    no.gen3$gen_name_extact_match[i] <- temp.name
-    no.gen3$GEN[i] <- GEN_name_crosswalk$GEN[where.match]
+# add this information to dat.all if we found a match
+for(i in 1:nrow(no.gen)){
+  if(!is.na(no.gen$gen_name_extact_match[i] )){
+    dat.all$GEN[dat.all$EIN == no.gen$EIN[i]] <- no.gen$GEN[i]
   }
 }
 
-# add these to the dat.all
-no.gen3.yes <- no.gen3 %>% filter(!is.na(GEN))
-for(i in 1:nrow(no.gen3.yes)){
-  dat.all$GEN[dat.all$EIN == no.gen3.yes$EIN[i]] <- no.gen3.yes$GEN[i]
-}
 
 
 ### Step 4 
 source("affiliate/data-wrangling-scripts/scrape-gen.R")
 no.gen4 <-
-  no.gen3 %>% 
-  filter(is.na(GEN))  %>%
-  filter(HAS_GROUP_RETURN | FRCD == 3) %>%
+  no.gen %>% 
+  filter(is.na(gen_name_extact_match)) %>% 
+  filter(HAS_GROUP_RETURN | FILING_REQ_CD == "03" | AFFILIATION %in% c("6", "7", "8")) %>%
   mutate(gen2 = NA)
 
 for(i in 1:nrow(no.gen4)){
@@ -746,17 +746,25 @@ for(i in 1:nrow(no.gen4)){
 
 }
 #save the ones with a GEN in the all.dat
-no.gen4.yes <- no.gen4 %>% filter(!is.na(GEN))
-for(i in 1:nrow(no.gen3.yes)){
-  dat.all$GEN[dat.all$EIN == no.gen4.yes$EIN[i]] <- no.gen4.yes$GEN[i]
+
+for(i in 1:nrow(no.gen4)){
+  if(!is.na(no.gen4$gen2[i])){
+    dat.all$GEN[dat.all$EIN == no.gen4$EIN[i]] <- no.gen4$gen2[i]
+  }
 }
 
 
 ```
 
+
+
+
+
 ## Repeat steps 1 and 2 with these newly found GEN's. 
 
 Do Step 2 first to get a name to later append onto step 1. 
+
+except step 2.2 sets aff_name to most common name of the parent orgs if unique, if not, it take the most commonly used name of the subordinates. 
 
 
 ### Repeat Step 2
@@ -768,6 +776,7 @@ all_GEN <-
   dat.all %>%
   #remove data without a group number, we will come back to these later
   filter(!is.na(GEN)) %>% 
+  filter(GEN != "0000") %>% 
   #nest by group number
   nest(.by = GEN) %>%
   #how many eins in each group
@@ -788,8 +797,8 @@ GEN_name_crosswalk <-
   all_GEN %>% 
   filter(num_eins == 1) %>%
   rowwise() %>%
-  mutate(GEN_NAME =  paste(names[[1]])) %>% 
-  select(GEN, GEN_NAME, EINs) 
+  mutate(AFF_NAME =  paste(names[[1]])) %>% 
+  select(GEN, AFF_NAME, EINs) 
 
 
 ### Step 2.1 -------------------------------
@@ -802,12 +811,13 @@ dat1 <-
 for(i in 1:nrow(dat1)){
   temp.dat <- dat1$data[[i]]
   #find where parent org is 
-  where.aff <- which(temp.dat$AFFILIATION %in% c(1, 6, 8))
+  where.aff <- which(temp.dat$AFF_ROLL == "parent")
+  
+  unique.names <- unique(temp.dat$NAME[where.aff]) #check for duplicate records
   
   #if there is exactly one parent org, store it 
-  if(length(where.aff) == 1){
-    temp.name <- temp.dat$NAME[where.aff]
-    temp.name <- trimws(str_remove(temp.name, "GROUP RETURN|GRP RETURN")) #remove white space and "group return"
+  if(length(unique.names) == 1){
+    temp.name <- trimws(str_remove(unique.names, "GROUP RETURN|GRP RETURN")) #remove white space and "group return"
     dat1$aff_name[i] <- temp.name
   }
 }
@@ -817,7 +827,7 @@ GEN_name_crosswalk <-
   dat1 %>% 
   filter(!is.na(aff_name)) %>%
   select(GEN, aff_name, EINs) %>% 
-  rename(GEN_NAME = aff_name) %>%
+  rename(AFF_NAME = aff_name) %>%
   rbind(GEN_name_crosswalk)
 
 
@@ -827,33 +837,150 @@ dat2 <-
   dat1 %>% 
   filter(is.na(aff_name))
 
-dat2$aff_name[dat2$GEN == "5935"] <- "NORTH CAROLINA STATE UNIVERSITY"
-dat2$aff_name[dat2$GEN == "5939"] <- "REGENTS OF THE UNIVERSITY OF MINNESOTA"
+### Find the most commonly used name 
+for(i in 1:nrow(dat2)){
+  temp.names <- dat2$data[[i]]$NAME
+  temp.aff <- dat2$data[[i]]$AFF_ROLL
+  
+  #get parent names 
+  parent.names <- table(temp.names[temp.aff == "parent"]) %>% sort() 
+  
+  #is parent name unique? if so, store it
+  num.parent.names <- length(parent.names)
+  if(num.parent.names == 1){
+    dat2$aff_name[i] <- names(parent.names[num.parent.names])
+    break
+  }else if(parent.names[num.parent.names] > parent.names[num.parent.names - 1]){
+    dat2$aff_name[i] <- names(parent.names[num.parent.names])
+    break
+  }else{#take most commonly used name of all orgs, not just parents
+    dat2$aff_name[i] <- table(temp.names) %>% sort() %>% tail(1) %>% names()
+  }
+    
+}
+  
+
+
 
 GEN_name_crosswalk <-
   dat2 %>% 
   filter(!is.na(aff_name)) %>%
   select(GEN, aff_name, EINs) %>% 
-  rename(GEN_NAME = aff_name) %>%
+  rename(AFF_NAME = aff_name) %>%
   rbind(GEN_name_crosswalk)
 
 
 ```
 
 
+### Add structure to the EIN's 
+
+There should be 1 EIN that is the parent. But this is not always the case as the parent sometimes changes their name over time. We take the most recent ruling 
+
+```{r}
+#store only the needed data to search through later 
+keep.eins <- unique(unlist(GEN_name_crosswalk$EINs))
+
+dat.search <- dat.all[dat.all$GEN != "0000", c("EIN", "NAME", "GEN", "HAS_GROUP_RETURN", "AFF_ROLL", "RULING")]
+row.keep <- dat.search$EIN %in% keep.eins 
+dat.search <- dat.search[row.keep, ]
+
+
+GEN_name_crosswalk$PARENT_EIN <- NA
+GEN_name_crosswalk$NUM_EINS <- NA
+GEN_name_crosswalk$AFFILIATE_INFO <- vector(mode = "list", length = nrow(GEN_name_crosswalk))
+
+#there will be some warnings in this loop, that is okay. 
+for(i in 1:nrow(GEN_name_crosswalk)){
+  
+  #get the eins that use that GEN
+  temp.eins <- unique(GEN_name_crosswalk$EINs[[i]])
+  
+  #store the number of them 
+  GEN_name_crosswalk$NUM_EINS[i] <- length(temp.eins)
+  
+  #get basic info about the orgs 
+  dat.temp <- dat.search[dat.search$GEN ==  GEN_name_crosswalk$GEN[i] , ]
+  dat.temp <- distinct(dat.temp)
+  
+  #save this data in place of just a list of EINs
+  GEN_name_crosswalk$AFFILIATE_INFO[[i]] <- dat.temp
+  
+  #find the parent EIN
+  #if there is no parent, don't do this park
+  
+  
+  #if there is only one org, store than EIN
+  if(nrow(dat.temp) == 1){
+    GEN_name_crosswalk$PARENT_EIN[i] <- dat.temp$EIN[1]
+  }else if(sum(dat.temp$AFF_ROLL == "parent", na.rm = TRUE) == 0){
+    next
+  }else{#otherwise, find the parent EIN
+    parent.temp <- dat.temp[dat.temp$AFF_ROLL == "parent",  ]
+    
+    #if the parent's EIN is unique, store it
+    if(length(unique(parent.temp$EIN)) == 1){
+      GEN_name_crosswalk$PARENT_EIN[i] <- parent.temp$EIN[1]
+    }else{
+      parent.EIN <- unique(
+        parent.temp$EIN[as.numeric(parent.temp$RULING) == 
+                          max(as.numeric(parent.temp$RULING), na.rm = T)])
+      parent.EIN <- na.omit(parent.EIN)
+      
+      if(length(parent.EIN) == 1){
+        GEN_name_crosswalk$PARENT_EIN[i] <- parent.EIN
+      }
+    }
+  }
+  
+  #if there is still not one parent org, find the parent org that matches the name most commonly used by the suborniates
+  if(is.na(GEN_name_crosswalk$PARENT_EIN[i])){
+    sub.temp <- dat.temp[dat.temp$AFF_ROLL == "subordinate",  ]
+    parent.temp <- na.omit(dat.temp[dat.temp$AFF_ROLL == "parent",  ])
+    sub.name.most <- table(sub.temp$NAME) %>% sort() 
+    
+    parent.temp$freq <- NA
+    for(j in 1:nrow(parent.temp)){
+      parent.temp$freq[j] <- sub.name.most[which(names(sub.name.most) == parent.temp$NAME[j])]
+    }
+    
+    parent.EIN <- parent.temp$EIN[parent.temp$freq == max(parent.temp$freq)]
+    
+    if(length(parent.EIN) == 1){
+      GEN_name_crosswalk$PARENT_EIN[i] <- parent.EIN
+    }
+  }
+}
+
+
+
+#manually fixing the one weird case 
+GEN_name_crosswalk$PARENT_EIN[GEN_name_crosswalk$GEN == "6378"] <- "832564688"
+
+
+
+#remove EIN column 
+GEN_name_crosswalk <- GEN_name_crosswalk %>% select(-EINs)
+
+```
+
+
+
+
 ### Repeat step 1
 
-Repeat step 1, but now adding the GEN_name from `GEN_name_crosswalk`. 
+Repeat step 1, but now adding the AFF_NAME from `GEN_name_crosswalk`. 
 
 ```{r}
 ein.gen.crosswalk.final <-
   dat.all %>% 
-  #only keep those with GEN's
+  #only keep those with GEN's, we will later bind to those without GEN's
   filter(!is.na(GEN)) %>%
-  select(EIN, NAME, GEN) %>% 
+  select(EIN, NAME, GEN, AFFILIATION, AFF_ROLL, RELIGIOUS, MOST_RECENT_YEAR_FILED) %>% 
   rename(EIN_NAME = NAME) %>% 
   #get GEN NAME 
-  left_join(GEN_name_crosswalk %>% select(GEN, GEN_NAME))
+  left_join(GEN_name_crosswalk %>% select(GEN, AFF_NAME)) %>% 
+  relocate(EIN, EIN_NAME, GEN, AFF_NAME, AFF_ROLL, AFFILIATION, RELIGIOUS, MOST_RECENT_YEAR_FILED)
 
 ```
 
@@ -861,12 +988,12 @@ ein.gen.crosswalk.final <-
 
 ## Save these crosswalks 
 
-```{r}
-write_csv(ein.gen.crosswalk.final, file = "affiliate/data-rodeo/EIN-GEN-crosswalk.csv" )
 
+```{r}
 GEN_ParentName_crosswalk <- GEN_name_crosswalk
 EIN_GEN_crosswalk <- ein.gen.crosswalk.final
 
-save(GEN_ParentName_crosswalk, EIN_GEN_crosswalk, file = "affiliate/data-rodeo/GEN-ParentName-EIN-crosswalk.Rda")
+save(EIN_GEN_crosswalk, file = "affiliate/data-rodeo/EIN-GEN-crosswalk.Rda" )
+save(GEN_ParentName_crosswalk, file = "affiliate/data-rodeo/GEN-ParentName-EIN-crosswalk.Rda")
 
 ```
