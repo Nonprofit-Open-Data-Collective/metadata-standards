@@ -17,7 +17,8 @@ bmf.ein <-
   mutate(GEN = str_pad(as.character(GROUP), width = 4, side = "left", pad = "0")) %>% 
   mutate_at(vars(c(EIN, SUBSECTION, CLASSIFICATION,RULING, FOUNDATION, ACTIVITY, STATUS, FILING_REQ_CD, ACCT_PD )), 
             as.character) %>% 
-  mutate(SUBSECTION = str_pad(SUBSECTION, 2, pad = "0", side = "left"),
+  mutate(EIN = str_pad(EIN, 9, pad = "0", side = "left"),
+         SUBSECTION = str_pad(SUBSECTION, 2, pad = "0", side = "left"),
          CLASSIFICATION = str_pad(CLASSIFICATION, 4, pad = "0", side = "left"),
          RULING = str_pad(RULING, 6, pad = "0", side = "left"),
          FOUNDATION = str_pad(FOUNDATION, 4, pad = "0", side = "left"),
