@@ -1,0 +1,657 @@
+---
+title: "Exploring Tax Exempt Status "
+output: html_notebook
+---
+
+
+## Import data 
+
+```{r}
+library(tidyverse)
+library(DT)
+
+### Master BMF
+bmf.nccs <- read_csv("https://nccs-data.urban.org/dl.php?f=bmf/2022/bmf.bm2208.csv", 
+                col_types = cols(col_factor(NULL)))
+
+bmf.irs <- read_csv("https://nccsdata.s3.amazonaws.com/raw/bmf/2023-08-BMF.csv")
+
+#drop columns we aren't using 
+bmf.irs <- bmf %>% select(-c(ADDRESS, CITY, STATE ))
+
+## Making classification codes - to look at with subsection codes
+bmf.irs <- bmf.irs %>% 
+  mutate(class1 = grepl("1", bmf$CLASSIFICATION),
+          class2 = grepl("2", bmf$CLASSIFICATION),
+          class3 = grepl("3", bmf$CLASSIFICATION),
+          class4 = grepl("4", bmf$CLASSIFICATION),
+          class5 = grepl("5", bmf$CLASSIFICATION),
+          class6 = grepl("6", bmf$CLASSIFICATION),
+          class7 = grepl("7", bmf$CLASSIFICATION),
+          class8 = grepl("8", bmf$CLASSIFICATION))
+
+
+### Making activity codes 
+bmf.irs <- bmf.irs %>% 
+  mutate(ACTIVITY = as.numeric(ACTIVITY) ) %>%
+  mutate(activity1 = substr(ACTIVITY, 1, 3),
+         activity2 = substr(ACTIVITY, 4, 6),
+         activity3 = substr(ACTIVITY, 7, 9)) %>%
+  mutate(activity1.group = case_when(
+    activity1 < 30 ~ "religious activities",
+    activity1 < 60 ~ "Schools, Colleges and Related Activities", 
+    activity1 < 120 ~ "Cultural, Historical of Other Educational Activities",
+    activity1 < 150 ~ "Other Instructions and Training Activities", 
+    activity1 < 180 ~ "Health Services and Related Activities",
+    activity1 < 200 ~ "Scientific Research Activities",
+    activity1 < 230 ~  "Business and Professional Organizations", 
+    activity1 < 250 ~ "Farming and Related Activities",
+    activity1 < 260 ~ "Mutual Organizations",
+    activity1 < 280 ~ "Employee of Membership Benefit Organizations",
+    activity1 < 320 ~ "Sports, Athletic Recreational and Social Activities",
+    activity1 < 350 ~ "Youth Activities",
+    activity1 < 380 ~ "Conservation, Environmental and Beautification Activities",
+    activity1 < 400 ~ "Housing Activities",
+    activity1 < 430 ~ "Inner City or Community Activities",
+    activity1 < 450 ~ "Civil Rights Activities",
+    activity1 < 470 ~ "Litigation and Legal Aid Activities", 
+    activity1 < 510 ~ "Legislative and Political Activities",
+    activity1 < 560 ~ "Advocacy",
+    activity1 < 600 ~ "Other Activities Directed to Individuals",
+    activity1 < 605 ~ "Activities Purposes and Activities",
+    activity1 < 450 ~ "Other Purposes and Activities",
+    TRUE ~ "NONE" )) %>% 
+  mutate(activity2.group = case_when(
+    activity2 < 30 ~ "religious activities",
+    activity2 < 60 ~ "Schools, Colleges and Related Activities", 
+    activity2 < 120 ~ "Cultural, Historical of Other Educational Activities",
+    activity2 < 150 ~ "Other Instructions and Training Activities", 
+    activity2 < 180 ~ "Health Services and Related Activities",
+    activity2 < 200 ~ "Scientific Research Activities",
+    activity2 < 230 ~  "Business and Professional Organizations", 
+    activity2 < 250 ~ "Farming and Related Activities",
+    activity2 < 260 ~ "Mutual Organizations",
+    activity2 < 280 ~ "Employee of Membership Benefit Organizations",
+    activity2 < 320 ~ "Sports, Athletic Recreational and Social Activities",
+    activity2 < 350 ~ "Youth Activities",
+    activity2 < 380 ~ "Conservation, Environmental and Beautification Activities",
+    activity2 < 400 ~ "Housing Activities",
+    activity2 < 430 ~ "Inner City or Community Activities",
+    activity2 < 450 ~ "Civil Rights Activities",
+    activity2 < 470 ~ "Litigation and Legal Aid Activities", 
+    activity2 < 510 ~ "Legislative and Political Activities",
+    activity2 < 560 ~ "Advocacy",
+    activity2 < 600 ~ "Other Activities Directed to Individuals",
+    activity2 < 605 ~ "Activities Purposes and Activities",
+    activity2 < 450 ~ "Other Purposes and Activities",
+    TRUE ~ "NONE" )) %>% 
+  mutate(activity3.group = case_when(
+    activity3 < 30 ~ "religious activities",
+    activity3 < 60 ~ "Schools, Colleges and Related Activities", 
+    activity3 < 120 ~ "Cultural, Historical of Other Educational Activities",
+    activity3 < 150 ~ "Other Instructions and Training Activities", 
+    activity3 < 180 ~ "Health Services and Related Activities",
+    activity3 < 200 ~ "Scientific Research Activities",
+    activity3 < 230 ~  "Business and Professional Organizations", 
+    activity3 < 250 ~ "Farming and Related Activities",
+    activity3 < 260 ~ "Mutual Organizations",
+    activity3 < 280 ~ "Employee of Membership Benefit Organizations",
+    activity3 < 320 ~ "Sports, Athletic Recreational and Social Activities",
+    activity3 < 350 ~ "Youth Activities",
+    activity3 < 380 ~ "Conservation, Environmental and Beautification Activities",
+    activity3 < 400 ~ "Housing Activities",
+    activity3 < 430 ~ "Inner City or Community Activities",
+    activity3 < 450 ~ "Civil Rights Activities",
+    activity3 < 470 ~ "Litigation and Legal Aid Activities", 
+    activity3 < 510 ~ "Legislative and Political Activities",
+    activity3 < 560 ~ "Advocacy",
+    activity3 < 600 ~ "Other Activities Directed to Individuals",
+    activity3 < 605 ~ "Activities Purposes and Activities",
+    activity3 < 450 ~ "Other Purposes and Activities",
+    TRUE ~ "NONE" ))
+
+
+
+
+### NTEE Codes 
+ntee <- read_csv("https://raw.githubusercontent.com/Nonprofit-Open-Data-Collective/mission-taxonomies/main/NTEE-disaggregated/ntee-crosswalk.csv")
+
+```
+
+## Variable Codings 
+
+### Subsector Code 501c()
+
+| SUBSECCD | Subsector Code 501c()                                                                 |
+|--------------|----------------------------------------------------------|
+| 01       | 01- Corporations originated under Act of Congress, including Federal Credit Unions    |
+| 02       | 02- Title holding corporation for a tax-exempt organization.                          |
+| 03       | 03- Religious, educational, charitable, scientific, and literary organizations...     |
+| 04       | 04- Civic leagues, social welfare organizations, and local associations of employees  |
+| 05       | 05- Labor, agricultural, horticultural organizations. These are eduactional or        |
+| 06       | 06- Business leagues, chambers of commerce, real estate boards, etc. formed to impro  |
+| 07       | 07- Social and recreational clubs which provide pleasure, recreation, and social      |
+| 08       | 08- Fraternal beneficiary societies and associations, with lodges providing for payme |
+| 09       | 09- Voluntary employees' beneficiary ass'ns (including fed. employees' voluntary      |
+| 10       | 10- Domestic fraternal societies and assoc's-lodges devoting their net earnings to    |
+| 11       | 11- Teachers retirement fund associations.                                            |
+| 12       | 12- Benevolent life insurance associations, mutual ditch or irrigation companies,     |
+| 13       | 13- Cemetery companies, providing burial and incidental activities for members.       |
+| 14       | 14- State-chartered credit unions, mutual reserve funds, offering loans to members... |
+| 15       | 15- Mutual insurance cos. ar associations, providing insurance to members subst       |
+| 16       | 16- Cooperative organizations to finance crop operations, in conjunction with         |
+| 17       | 17- Supplemental unemployment benefit trusts, providing payments of suppl. unemp      |
+| 18       | 18- Employee funded pension trusts, providing benefits under a pension plan funded by |
+| 19       | 19- Post or organization of war veterans.                                             |
+| 20       | 20- Trusts for prepaid group legal services, as part of a qual. group legal service   |
+| 21       | 21- Black lung trusts, satisfying claims for compensation under Black Lung Acts.      |
+| 22       | 22- Multiemployer Pension Plan                                                        |
+| 23       | 23- Veterans association formed prior to 1880                                         |
+| 24       | 24-Trust described in Section 4049 of ERISA                                           |
+| 25       | 25- Title Holding Company for Pensions, etc                                           |
+| 26       | 26- State-Sponsored High Risk Health Insurance Organizations                          |
+| 27       | 27- State-Sponsored Workers Compensation Reinsurance                                  |
+| 40       | 40- Apostolic and religious orgs. - 501(d)                                            |
+| 50       | 50- Cooperative Hospital Service Organization - 501(e)                                |
+| 60       | 60- Cooperative Service Org. of Operating Educ. Org.- 501(f)                          |
+| 70       | 70- Child Care Organization - 501(k)                                                  |
+| 71       | 71- Charitable Risk Pool                                                              |
+| 80       | 80- Farmers' Cooperatives                                                             |
+| 81       | 81- Qualified State-Sponsored Tuition Program                                         |
+| 82       | 82- 527 Political Organizations                                                       |
+| 90       | 90- 4947(a)(2) Split Interest Trust                                                   |
+| 91       | 91- 4947(a)(1) Public Charity (Files 990/990-EZ)                                      |
+| 92       | 92- 4947(a)(1) Private Foundations                                                    |
+| 93       | 93- 1381(a)(2) Taxable Farmers Cooperative                                            |
+| CO       | CO- Unspecified 501(c) Organization Other Than 501(c)(3)                              |
+
+
+
+
+
+
+## Initial Explorations 
+
+```{r}
+bmf.nccs %>%
+  select(LEVEL1, LEVEL2) %>%
+  group_by(LEVEL1, LEVEL2) %>%
+  summarise(count = n ()) %>%
+  ggplot(aes(x= LEVEL1, y = LEVEL2)) +
+  geom_tile(aes(fill = log(count, 10))) +
+  geom_text(aes(label=count), color = "red")  +
+  ggtitle("Level 1 vs Level 2")
+
+  
+ggplot(bmf.nccs, aes(x = fct_infreq(LEVEL3))) +
+  geom_bar() +
+  geom_text(stat='count', aes(label=..count..), 
+            vjust=-1, 
+            color = "red",
+            angle = 30, 
+            nudge_x = 0.75)+
+  ggtitle("Org Type")
+
+# 501c() type
+ggplot(bmf.nccs, aes(x = fct_infreq(as.factor(SUBSECCD)))) +
+  geom_bar() +
+  geom_text(stat='count', aes(label=..count..), 
+            vjust=-1, 
+            color = "red",
+            angle = 30, 
+            nudge_x = 0.75,
+            size = 2)+
+  ggtitle("501c() Type")
+
+## Filter out 501c(3) to look at the other ones 
+bmf.nccs %>%
+  filter(SUBSECCD != 3 ) %>%
+  ggplot(aes(x = fct_infreq(as.factor(SUBSECCD)))) +
+  geom_bar() +
+  geom_text(stat='count', aes(label=..count..), 
+            vjust=-1, 
+            color = "red",
+            angle = 30, 
+            nudge_x = 0.75,
+            size = 2)+
+  ggtitle("501c() Type")
+
+#reason for 501c(3) status
+bmf.nccs %>%
+  select(SUBSECCD, FNDNCD) %>%
+  filter(SUBSECCD == 3 ) %>% 
+  ggplot(aes(x = fct_infreq(as.factor(FNDNCD)))) +
+  geom_bar() +
+  geom_text(stat='count', aes(label=..count..), 
+            vjust=-1, 
+            color = "red",
+            angle = 30, 
+            nudge_x = 0.75,
+            size = 2)+
+  ggtitle("Reason for 501c() Status")
+
+#501c(3) status vs LEVEL2
+bmf.nccs %>%
+  select(SUBSECCD, FNDNCD, LEVEL2) %>%
+  filter(SUBSECCD == 3 ) %>%
+  group_by(LEVEL2, FNDNCD) %>%
+  summarise(count = n ()) %>%
+  ggplot(aes(x= LEVEL2, y = FNDNCD)) +
+  geom_tile(aes(fill = log(count, 10))) +
+  geom_text(aes(label=count), color = "red")  +
+  ggtitle("Level 2 vs Reason for 501c(3) Status")
+
+# Reason for 501c(3) Status vs Level 3
+bmf.nccs %>%
+  select(SUBSECCD, FNDNCD, LEVEL3) %>%
+  filter(SUBSECCD == 3 ) %>%
+  group_by(LEVEL3, FNDNCD) %>%
+  summarise(count = n ()) %>%
+  ggplot(aes(x= LEVEL3, y = FNDNCD)) +
+  geom_tile(aes(fill = log(count, 10))) +
+  geom_text(aes(label=count), color = "red", size=2)  +
+  ggtitle("Level 3 vs Reason for 501c(3) Status")
+
+```
+
+
+## LEVEL3 vs NTEE 
+
+```{r}
+
+
+dat.NTEE <- 
+  bmf.nccs %>%
+  #Keep EIN To join later if needed
+  select(EIN, NAME, NTEEFINAL, NTEECC, NTEE1, LEVEL4, LEVEL3, LEVEL2) %>%
+  left_join(ntee, join_by(NTEEFINAL == NTEE))
+  
+dat.NTEE%>%
+  group_by(LEVEL3, level1) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(x= LEVEL3, y = level1)) +
+  geom_tile(aes(fill = log(count, 10))) +
+  geom_text(aes(label=count), color = "red", size = 2)  +
+  ggtitle("Level 3 vs Broad Category")
+
+  ## Table of matching codes 
+tab.L3.BC <- data.frame(
+  L3 = c("AR", "ED", "EN", "HE", "HS", "IN", "MR", "MO", "PB", "RE", "UN"),
+  BC = c("ART", "EDU", "ENV", "HEL", "HMS", "IFA", "MMB", "MMB", "PSB", "REL", "UNU")
+)
+
+# Table of Codes that Do and do not not Match 
+tab.match<- 
+  dat.NTEE%>%
+  group_by(LEVEL3, level1) %>%
+  summarise(count = n ()) %>%
+  pivot_wider(names_from = level1, values_from = count) %>%
+  relocate(LEVEL3, ART, EDU, ENV, HEL, HMS, IFA, PSB, REL, MMB, UNU, `NA`)  %>%
+  replace(is.na(.), 0)
+
+#light blue means the LEVEL 3 and Broad Categories match 
+tab.match %>%
+  datatable(rownames = FALSE)%>%
+  formatStyle(columns = "ART", 
+              background = styleEqual(
+                sum(dat.NTEE$LEVEL3 == "AR" & dat.NTEE$level1 == "ART", na.rm = TRUE), 
+                c("lightblue"))) %>%
+  formatStyle(columns = "EDU", 
+              background = styleEqual(
+                sum(dat.NTEE$LEVEL3 == "ED" & dat.NTEE$level1 == "EDU", na.rm = TRUE), 
+                c("lightblue"))) %>%
+  formatStyle(columns = "ENV", 
+              background = styleEqual(
+                sum(dat.NTEE$LEVEL3 == "EN" & dat.NTEE$level1 == "ENV", na.rm = TRUE), 
+                c("lightblue"))) %>%
+  formatStyle(columns = "HEL", 
+              background = styleEqual(
+                sum(dat.NTEE$LEVEL3 == "HE" & dat.NTEE$level1 == "HEL", na.rm = TRUE), 
+                c("lightblue"))) %>%
+  formatStyle(columns = "HMS", 
+              background = styleEqual(
+                sum(dat.NTEE$LEVEL3 == "HS" & dat.NTEE$level1 == "HMS", na.rm = TRUE), 
+                c("lightblue"))) %>%
+  formatStyle(columns = "IFA", 
+              background = styleEqual(
+                sum(dat.NTEE$LEVEL3 == "IN" & dat.NTEE$level1 == "IFA", na.rm = TRUE), 
+                c("lightblue"))) %>%
+  formatStyle(columns = "MMB", 
+              background = styleEqual(
+                sum(dat.NTEE$LEVEL3 == "MR" & dat.NTEE$level1 == "MMB", na.rm = TRUE), 
+                c("lightblue"))) %>%
+  formatStyle(columns = "MMB", 
+              background = styleEqual(
+                sum(dat.NTEE$LEVEL3 == "MO" & dat.NTEE$level1 == "MMB", na.rm = TRUE), 
+                c("lightblue"))) %>%
+  formatStyle(columns = "PSB", 
+              background = styleEqual(
+                sum(dat.NTEE$LEVEL3 == "PB" & dat.NTEE$level1 == "PSB", na.rm = TRUE), 
+                c("lightblue"))) %>%
+  formatStyle(columns = "REL", 
+              background = styleEqual(
+                sum(dat.NTEE$LEVEL3 == "RE" & dat.NTEE$level1 == "REL", na.rm = TRUE), 
+                c("lightblue"))) %>%
+  formatStyle(columns = "UNU", 
+              background = styleEqual(
+                sum(dat.NTEE$LEVEL3 == "UN" & dat.NTEE$level1 == "UNU", na.rm = TRUE), 
+                c("lightblue"))) 
+  
+
+
+```
+
+
+Comments:
+
+-   "AR", "ED", "EN", "HE", "IN", "MO", "MR", "PB", "RE", "UN" and "-"/NA, have clear NTEE Equivalents.
+
+-   The ZA, ..., ZF need to be investigated.
+
+    -   ZA, ZB are fairly evenly spread across broad categories
+
+    -   ZC seems to be concentrated in PSB, but has a lot in other broad categories as well.
+
+    -   ZD, ZE, ZF seem to be concentrated in PSB, but
+
+
+#### Level 3 == "ZA" or "ZB"
+
+```{r}
+
+#LEVEL3 vs NTEE org type (level 5)
+dat.NTEE%>%
+  filter(str_sub(LEVEL3, 1, 1) == "Z") %>%
+  group_by(LEVEL3, level5) %>%
+  summarise(count = n ()) %>%
+  pivot_wider(names_from = level5, values_from = count) %>%
+  datatable()
+
+```
+
+Comments: 
+
+- LEVEL3 Code "ZA" is NTEE Common Code MS (11- Monetary Support - Single Org) 
+
+- LEVEL3 Code "ZB" is NTEE Common Code MM (12- Monetary Support - Multiple Orgs)
+
+Let's explore what's going on with ZC - ZF
+
+#### LEVEL3 == "ZA"
+
+```{r}
+### LEVEL3 == "ZA" vs Major Group
+dat.NTEE%>%
+  filter(LEVEL3 == "ZA") %>%
+  group_by(LEVEL3, level2) %>%
+  summarise(count = n ())  %>% 
+  arrange(desc(count)) %>%
+  datatable()
+```
+
+Comments: 
+
+- Most common is B, but there are thousands outside of group B. 
+
+- I don't think ZA corresponds to a specific major group. I think it only corresponds to specialty org type Monetary Support - Single Org
+
+#### LEVEL3 == "ZB"
+
+```{r}
+### LEVEL3 == "ZB" vs Major Group
+dat.NTEE%>%
+  filter(LEVEL3 == "ZB") %>%
+  group_by(LEVEL3, level2) %>%
+  summarise(count = n ())  %>% 
+  arrange(desc(count)) %>%
+  datatable()
+```
+
+Comments: 
+
+- Most common is B, but there are thousands outside of group B. 
+
+- I don't think ZA corresponds to a specific major group. I think it only corresponds to specialty org type Monetary Support - Multiple Orgs
+
+
+#### LEVEL3 == "ZC"
+
+```{r}
+### LEVEL3 == "ZC" vs Major Group
+dat.NTEE%>%
+  filter(LEVEL3 == "ZC") %>%
+  group_by(LEVEL3, level2) %>%
+  summarise(count = n ())  %>% 
+  arrange(desc(count)) %>%
+  datatable()
+
+dat.NTEE%>%
+  filter(LEVEL3 == "ZC") %>%
+  group_by(LEVEL3,level4, level4.label) %>%
+  summarise(count = n ())  %>% 
+  arrange(desc(count)) %>%
+  datatable()
+```
+
+Comments:
+
+-   Mostly Major Group T: Philanthropy, Voluntarism & Grantmaking Foundations 
+
+- This makes sense since "ZC" is Private grantmaking foundations
+
+
+### LEVEL3 == "ZD"
+
+```{r}
+### LEVEL3 == "ZC" vs Major Group
+dat.NTEE%>%
+  filter(LEVEL3 == "ZD") %>%
+  group_by(LEVEL3, level3) %>%
+  summarise(count = n ()) 
+
+dat.NTEE%>%
+  filter(LEVEL3 == "ZD") %>%
+  group_by(LEVEL3,level4, level4.label) %>%
+  summarise(count = n ())  %>% 
+  arrange(desc(count)) %>%
+  datatable()
+```
+
+
+Comments : 
+
+- All of these are in T (Philanthropy, Voluntarism & Grantmaking Foundations)
+
+- All of these are T30 (Public Foundations) and T31 (Community Foundations).
+
+
+### LEVEL3 == "ZE"
+
+```{r}
+### How many ZE orgs
+dat.NTEE%>%
+  filter(LEVEL3 == "ZE") %>%
+  group_by(LEVEL3) %>%
+  summarise(count = n ()) 
+
+### ZE vs major group
+dat.NTEE%>%
+  filter(LEVEL3 == "ZE") %>%
+  group_by(LEVEL3, level4, level4.label) %>%
+  summarise(count = n ())  %>% 
+  arrange(desc(count)) %>%
+  datatable()
+```
+
+Comments:
+
+-   Vast majority of these are T70 (Philanthropy, Voluntarism & Grantmaking Foundations) - (Organizations that administer centralized fundraising efforts and then in turn distribute the contributed funds to several nonprofit agencies.)
+
+
+
+### Level3 == "ZF"
+
+```{r}
+### How many ZF orgs
+dat.NTEE%>%
+  filter(LEVEL3 == "ZE") %>%
+  group_by(LEVEL3) %>%
+  summarise(count = n ()) 
+
+### ZF vs major group
+dat.NTEE%>%
+  filter(LEVEL3 == "ZF") %>%
+  group_by(LEVEL3, level4, level4.label) %>%
+  summarise(count = n ())  %>% 
+  arrange(desc(count))%>%
+  datatable
+```
+
+
+
+Comments:
+
+- all unclassified trusts
+
+
+
+### Z\* conclusions
+
+Updated table of most likely LEVEL3 to NTEE equvilants.
+
+| LEVEL3 Code | LEVEL 3 name                        | Most likely NTEE Code Equivalent                                                           |  Comments                                                                 |
+|--------------|--------------|------------------|--------------|--------------|
+| ZA          | Single organization support         | MS - 11 (Monetary Support - Single Organization)                                                                  | This LEVEL3 code doesn't seem to be particular to a specific major group |
+| ZB          | Fundraising within NTEE major group | MM - Potentially 12 (Monetary Support - Multiple Organizations)                                                              | This LEVEL3 code doesn't seem to be particular to a specific major group |
+| ZC          | Private grantmaking foundations     | T2\* (Private Grantmaking Foundations). There are some outside of this NTEE Code though    |            |                           
+| ZD          | Public foundations                  | T3\* (Private Operating Foundations).                                                                                                        |. |
+| ZE          | General fundraising                 | T70 (Federated Giving Programs)                                                             |                                                                          |
+| ZF          | Other Supporting Public Benefit     | T90(Named Trusts N.E.C.), T99 (Philanthropy, Voluntarism & Grantmaking Foundations N.E.C.)                                    |                                                                          |
+
+
+
+
+
+
+
+
+
+## Status 
+
+* 01 Unconditional Exemption
+
+* 02 Conditional Exemption
+
+* 12 Trust described in section 4947(a)(2) of the IR Code
+
+* 25 Organization terminating its private foundation status under section 507(b)(1)(B) of the Code
+
+```{r}
+table(bmf.irs$STATUS)
+```
+
+### Let's first focus on STATUS == 12 
+
+```{r}
+status12 <- bmf.irs %>% 
+  filter(STATUS == 12) %>% 
+  left_join(ntee, join_by(NTEE_CD == NTEE ))
+
+
+table(status12$level1, useNA = "always")
+
+
+table(status12$FOUNDATION)
+
+table(status12$SUBSECTION)
+
+table(status12$CLASSIFICATION, status12$SUBSECTION)
+
+table(status12$PF_FILING_REQ_CD) #1 is required to complete 990PF
+
+
+#those that are not required to file a PF, what are they required to file?
+status12 %>% 
+  filter(PF_FILING_REQ_CD == 0) %>% 
+  pull(FILING_REQ_CD) %>% 
+  table()
+
+
+
+```
+
+Comments: 
+
+- Most NTEE codes in STATUS == 12 are NA
+
+- Most are not 501c(3)'s, some are 501c3 - Private non-operating foundation
+
+- Most are in classification 1, primarily subsection 91 (Non-Exempt Charitable Trusts	?) and 92 (4947(a)(1) - Private Foundation (Form 990PF Filer))
+
+- Most have PF FILING REQUIREMENT CODE == 1 (990-PF return), but some are not required to. 
+
+- It seems to be that most status == 12 (trust) are private foundations, which makes sense. 
+
+  - But there are ~800 who aren't required to file 990PF. Of those, they are either requried to file 990/990EZ/990-N or not required to file at all. 
+
+
+- The organization code doesn't make sense 
+
+```{r}
+table(status12$ORGANIZATION)
+```
+
+
+status == 12 says they are a trust, but their organization code says only 539 of them are trusts (organization == 2) 
+
+
+
+### Next, Status == 02
+
+```{r}
+status2 <- bmf.irs %>% 
+  filter(STATUS == 2) %>% 
+  left_join(ntee, join_by(NTEE_CD == NTEE ))
+
+
+table(status2$NTEE_CD, useNA = "always")
+
+table(status2$FOUNDATION)
+
+table(status2$SUBSECTION)
+
+table(status2$SUBSECTION, status2$CLASSIFICATION)
+
+
+# table(status2$SUBSECTION, status2$class1)
+# table(status2$SUBSECTION, status2$class2)
+# table(status2$SUBSECTION, status2$class3)
+# table(status2$SUBSECTION, status2$class4)
+# table(status2$SUBSECTION, status2$class7)
+
+
+table(status2$FILING_REQ_CD)
+
+table(status2$activity1.group)
+table(status2$activity2.group)
+table(status2$activity3.group)
+
+
+```
+
+
+Comments: 
+
+- Foundation codes are either 0 or 10 (church)
+
+- Most common subsection/classification is 501c(3) - classification 7 (church)
+
+- Filing requirement code 6 (not required - church) is most common, although there are a lot in F_REQ_Code 0 (not required), 1 (990 or 990EZ), 2(990-N)
+
+- most activity code groups are religious activities
+
+- Seems to be most subsection 02 are churches/religious orgs
+
+
+
+
