@@ -1,276 +1,124 @@
 # Load packages
 library( dplyr )
+library ( data.table )
 
 # Import data
+d <- fread( "efile-index-data-commons-2023-08-13.csv", select = c( "EIN", "FormType", "TaxYear" ))
 bmf <- read.csv( "https://nccs-data.urban.org/dl.php?f=bmf/2022/bmf.bm2201.csv")
-schedh <- read.csv( "SH-P05-T00-FAP-COMMUNITY-BENEFIT-POLICY-2018.csv" )
+schedh_1 <- read.csv( "SH-P01-T00-FAP-COMMUNITY-BENEFIT-POLICY-2018.csv" )
+schedh_3 <- read.csv( "SH-P03-T00-FAP-COMMUNITY-BENEFIT-POLICY-2018.csv" )
+schedh_5 <- read.csv( "SH-P05-T00-FAP-COMMUNITY-BENEFIT-POLICY-2018.csv" )
 
-t <- read.csv( "SCHEDULE-TABLE-2018.csv" )
-
-
-https://nccs-efile.s3.us-east-1.amazonaws.com/parsed/SCHEDULE-TABLE-2009.csv
-
-sh <- list()
-
-for( i in 2009:2019 )
-{
-  fn <- paste0( "https://nccs-efile.s3.us-east-1.amazonaws.com/parsed/SCHEDULE-TABLE-", i, ".csv" )
-  d <- read.csv( fn )
-  df <- d[ d$SCHEDH , ]
-  sh[[as.character(i)]] <- df
+# Add metadata functions
+get_last_x <- function(x) {
+  x <- x[ x != "" & ( ! is.na(x) ) ]
+  if( length(x) == 0 )
+  { return("") } 
+  return( x[ length(x) ] )
 }
 
-dh <- dplyr::bind_rows( sh )
-
-ntee <- dplyr::select( bmf, EIN, NTEEFINAL )
-
-dh <- merge( dh, ntee, by.x="ORG_EIN", by.y="EIN", all.x=T )
-
-dh$NTEE1 <- substr( dh$NTEEFINAL, 1, 1 )
-
-table( dh$NTEE1 ) %>% knitr::kable()
-
-
-|Var1 |  Freq|
-|:----|-----:|
-|     |    35|
-|A    |     5|
-|B    |   217|
-|D    |     1|
-|E    | 22454|
-|F    |   651|
-|G    |    41|
-|H    |     5|
-|I    |     2|
-|J    |     1|
-|K    |     1|
-|L    |    11|
-|M    |     3|
-|N    |    17|
-|P    |   153|
-|Q    |    16|
-|R    |     1|
-|S    |    35|
-|T    |    20|
-|U    |     1|
-|W    |     6|
-|X    |    49|
-|Y    |     3|
-
-
-
-
-dd <- select( dh, ORG_EIN, NTEE1, NTEEFINAL, SCHEDH ) %>% unique()
-table( dd$NTEE1 ) %>% knitr::kable()
-
-
-|Var1 | Freq|
-|:----|----:|
-|     |   14|
-|A    |    5|
-|B    |   38|  # university hospitals
-|D    |    1|
-|E    | 2507|
-|F    |   85|
-|G    |    7|
-|H    |    1|
-|I    |    2|
-|J    |    1|
-|K    |    1|
-|L    |    9|
-|M    |    3|
-|N    |    9|
-|P    |   27|
-|Q    |    2|
-|R    |    1|
-|S    |    9|
-|T    |    4|
-|U    |    1|
-|W    |    6|
-|X    |    6|
-|Y    |    3|
-
-
-dd$NTEE2 <- substr( dd$NTEEFINAL, 1, 2 )
-table( dd$NTEE2 ) %>% knitr::kable()
-
-
-|Var1 | Freq|
-|:----|----:|
-|     |   14|
-|A2   |    2|
-|A6   |    2|
-|A8   |    1|
-|B1   |    7|
-|B2   |    9|
-|B4   |   14|
-|B8   |    4|
-|B9   |    4|
-|D1   |    1|
-|E1   |   35|
-|E2   | 2360|
-|E3   |   61|
-|E4   |    2|
-|E5   |    5|
-|E6   |    3|
-|E7   |    2|
-|E8   |    1|
-|E9   |   38|
-|F0   |    2|
-|F2   |    7|
-|F3   |   76|
-|G3   |    4|
-|G4   |    2|
-|G9   |    1|
-|H9   |    1|
-|I1   |    1|
-|I7   |    1|
-|J3   |    1|
-|K2   |    1|
-|L0   |    1|
-|L2   |    6|
-|L8   |    1|
-|L9   |    1|
-|M2   |    3|
-|N2   |    1|
-|N3   |    1|
-|N5   |    2|
-|N6   |    4|
-|N9   |    1|
-|P2   |    2|
-|P3   |    2|
-|P7   |   18|
-|P8   |    5|
-|Q3   |    1|
-|Q7   |    1|
-|R2   |    1|
-|S2   |    6|
-|S3   |    1|
-|S8   |    2|
-|T2   |    1|
-|T3   |    1|
-|T7   |    2|
-|U3   |    1|
-|W3   |    5|
-|W8   |    1|
-|X2   |    5|
-|X9   |    1|
-|Y4   |    3|
-
-
-
-# Sched H Part V Section A. HOSPITAL FACILITIES
-# How many hospital facilities did the organization operate during
-# the tax year?
-# (list in order of size, from largest to smallest—see instructions)
-
-
-schedh <- schedh[ ! is.na(schedh$SH_05_HOSPITAL_NUM) , ]
-table( schedh$SH_05_HOSPITAL_NUM )
-
-n.string <- strsplit( schedh$SH_05_HOSPITAL_NUM, ";" )
-get_first <- function( x ) {
-  x <- x[1]
-  x <- gsub( "[{}]", "", x )
-  return(x)
+get_best_x <- function(x) {
+  if( length(x) == 0 )
+  { return("") }
+  t <- table(x)
+  mode.x <- t[ t == max(t) ] %>% names()
+  mode.x <- paste0( mode.x, collapse=";;" )
+  return( mode.x )
 }
 
-xx <- lapply( n.string, get_first ) %>% unlist()
-table(xx)
+# Convert values of 990T to NA in the d dataset
+d$FormType[ d$FormType == "990T" ] <- NA
 
-> table(xx) %>% sort() %>% knitr::kable()
+# Get the last FormType and TaxYear for each org in the d dataset
+d <- 
+  d %>%
+  arrange( EIN, FormType, TaxYear ) %>%
+  group_by( EIN ) %>%
+  transmute( 
+    LastFormType = get_last_x( FormType),
+    LastTaxYear = get_last_x( TaxYear )) %>%
+  unique() %>% 
+  ungroup() %>%
+  as.data.frame()
 
+table( d$LastFormType )
 
-|xx | Freq|
-|:--|----:|
-|16 |    1|
-|19 |    1|
-|20 |    1|
-|21 |    1|
-|24 |    1|
-|28 |    1|
-|42 |    1|
-|43 |    1|
-|13 |    2|
-|18 |    2|
-|22 |    2|
-|10 |    3|
-|11 |    3|
-|14 |    3|
-|9  |    4|
-|12 |    5|
-|15 |    5|
-|7  |    7|
-|8  |    9|
-|6  |   12|
-|5  |   30|
-|4  |   40|
-|3  |   61|
-|2  |  198|
-|1  | 1918|
+# Merge LastFormType into the BMF dataset
+bmf <- merge( x = bmf, y = d, by = "EIN", all.x = T )
+table( bmf$LastFormType )
 
+# Investigate the number of NAs in each section of the schedh datasets
+# I'm skipping part 2, since only some hospitals fill out that part.
+table(is.na(schedh_1$SH_01_REP_ANNUAL_COM_BEN_X))
+#| FALSE   TRUE 
+#| 2312 404064 
 
+table(is.na(schedh_1$SH_01_FA_AMT_BUDGETED_CARE_X))
+#| FALSE   TRUE 
+#| 2304 404072
 
+table(is.na(schedh_1$SH_01_FPG_FREE_CARE_X))
+#| FALSE   TRUE 
+#| 2303 404073 
 
-# https://nccs-efile.s3.us-east-1.amazonaws.com/xml/201141369349304784_public.xml
-# JOHNS CREEK COMMUNITY ARTS CENTER
+table(is.na(schedh_1$SH_01_FAP_X))
+#| FALSE   TRUE 
+#| 2312 404064 
 
+table(is.na(schedh_3$SH_03_COLLEC_POLICY_WRITTEN_X))
+#| FALSE   TRUE 
+#| 2304 404072 
 
-# > table( table( dh$ORG_EIN ) )
-# 
-#    1    2    3    4    5    6    7    8    9   10   11   12   13   14 
-#  260  102   90  113  116  115   94  109  248 1055  608  107   18    2 
-#
+table(is.na(schedh_3$SH_03_MEDICARE_REIMBURSE_AMT))
+#| FALSE   TRUE 
+#| 2259 404117 
 
+table(is.na(schedh_3$SH_03_BAD_DEBT_EXP_REPORTED_X))
+#| FALSE   TRUE 
+#| 2290 404086
 
-####
-####  NTEE VS ACTIVE HOSPITALS
-####
+table(is.na(schedh_5$SH_05_HOSPITAL_NUM))
+#| FALSE   TRUE 
+#| 2312 404064
 
+table(is.na(schedh_5$SH_05_CHNA_FIRST_LIC_X))
+#| FALSE   TRUE 
+#| 2304 404072 
 
-d.e20 <- filter( bmf, NTEEFINAL %in% c("E20","E21","E22","E24") )
+table(is.na(schedh_5_5$SH_05_FAP_CRITERIA_EXPLAIN_X))
+#| FALSE   TRUE 
+#| 2304 404072 
 
-table( d.e20$NTEEFINAL ) %>% knitr::kable()
+# Since there's no clear pattern, 
+# let's use F9_04_HOSPITAL_X from Form 990 instead.
+remove(schedh_1)
+remove(schedh_2)
+remove(schedh_3)
+remove(schedh_4)
+remove(schedh_5)
 
-|Var1 | Freq|
-|:----|----:|
-|E20  | 1429|
-|E21  | 1978|
-|E22  | 2804|
-|E24  |  403|
+f <- fread( "F9-P04-T00-REQUIRED-SCHEDULES-2018.csv", 
+            select = c( "ORG_EIN", "F9_04_HOSPITAL_X" ))
 
-# E20 Hospitals
-# E21 Community Health Systems
-# E22 General Hospitals
-# E24 Specialty Hospitals 
+# Rename ORG_EIN to EIN in the f dataset for merging purposes
+f <- f %>% rename( "EIN" = "ORG_EIN" )
 
-b2 <- filter( bmf, EIN %in% eins )
+# Remove duplicate rows from the f dataset
+n_distinct( f$EIN )
+f <- f %>% distinct( EIN, .keep_all = T )
 
-# 42103594 
+# Remove duplicate rows from the bmf dataset
+n_distinct( bmf$EIN )
+bmf <- bmf %>% distinct( EIN, .keep_all = T )
 
-https://nccs-efile.s3.us-east-1.amazonaws.com/xml/201912999349200006_public.xml
+# Merge the F9_04_HOSPITAL_X variable into the BMF dataset
+bmf <- merge( x = bmf, y = f, by = "EIN", all.x = T )
 
-https://s3.amazonaws.com/irs-form-990/201912999349200006_public.xml
+# Create the hosp variable
+bmf$hosp[ bmf$F9_04_HOSPITAL_X == 0 | bmf$F9_04_HOSPITAL_X == "false" | 
+          bmf$LastFormType == "990PF" ] <- 0
+bmf$hosp[ bmf$F9_04_HOSPITAL_X == 1 | bmf$F9_04_HOSPITAL_X == "true" ] <- 1
 
-# Create a hosp variable in the schedh dataset
-schedh$hosp <- 1
-
-# Rename ORG_EIN to EIN in the schedh dataset for merging purposes
-schedh <- schedh %>% rename( "EIN" = "ORG_EIN" )
-
-# Remove duplicate rows from the schedh dataset
-n_distinct(schedh$EIN)
-schedh <- schedh %>% distinct(EIN, .keep_all = T )
-
-# Drop all but the EIN and hosp variables from the schedh dataset
-schedh <- subset( schedh, select = c( "EIN", "hosp" ))
-
-# Merge the hosp variable into the BMF dataset
-bmf <- merge( x = bmf, y = schedh, by = "EIN", all.x = T )
-table( bmf$hosp )
-
-# Convert hosp values of NA to 0
-bmf$hosp[ is.na( bmf$hosp )] <- 0
 table( bmf$hosp )
 
 # Create variables
