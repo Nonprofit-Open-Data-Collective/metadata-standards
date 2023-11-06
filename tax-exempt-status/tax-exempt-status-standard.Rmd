@@ -1,0 +1,322 @@
+---
+title: "Tax Exempt Status Standard"
+author: "Olivia Beck"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(knitr)
+library(readr)
+library(readxl)
+library(stringr)
+library(tidyr)
+library(DT)
+
+bmf.url <- "https://nccsdata.s3.us-east-1.amazonaws.com/current/bmf/bmf-master.rds"
+
+col.names <- c("EIN", "SUBSECCD", "STATE", "RULEDATE", "NTEECC")
+
+bmf <- readRDS(url(bmf.url))
+bmf <- bmf[, col.names]
+
+bmf$SUBSECCD <- str_pad(bmf$SUBSECCD, 2, side = "left", pad = "0")
+
+var.tab <- read_excel("tax-exempt-status/501ctypes.xlsx")
+
+
+```
+
+## Variables
+
++--------------------------+--------------------------------------------------------------------------------------------+-------------+
+| Variable Name            | Meaning                                                                                    | Levels      |
++==========================+============================================================================================+=============+
+| tax_exempt_group         | Tax Exempt Groups                                                                          | -   CSB     |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   MMB     |
++--------------------------+--------------------------------------------------------------------------------------------+-------------+
+| tax_exempt_subgroup      | Tax Exempt Subgroups                                                                       | -   CSB     |
+|                          |                                                                                            |             |
+|                          |                                                                                            |     -   GEN |
+|                          |                                                                                            |             |
+|                          |                                                                                            |     -   COP |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   MMB     |
+|                          |                                                                                            |             |
+|                          |                                                                                            |     -   COR |
+|                          |                                                                                            |             |
+|                          |                                                                                            |     -   INS |
+|                          |                                                                                            |             |
+|                          |                                                                                            |     -   PEN |
+|                          |                                                                                            |             |
+|                          |                                                                                            |     -   SIG |
+|                          |                                                                                            |             |
+|                          |                                                                                            |     -   DEF |
++--------------------------+--------------------------------------------------------------------------------------------+-------------+
+| donations_deductible     | Are donations tax-deductible?                                                              | -   YU      |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   YR      |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   NO      |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   NA      |
++--------------------------+--------------------------------------------------------------------------------------------+-------------+
+| political_activity       | Can the organizations in this category engage in political activity?                       | -   LIM     |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   RES     |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   NA      |
++--------------------------+--------------------------------------------------------------------------------------------+-------------+
+| membership_restrictions  | Do the organizations in this category have legal membership restrictions?                  | -   Y       |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   N       |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   NA      |
++--------------------------+--------------------------------------------------------------------------------------------+-------------+
+| existance_501c           | Do the organizations in this category exist solely through another 501c organization       | -   Y       |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   L       |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   N       |
++--------------------------+--------------------------------------------------------------------------------------------+-------------+
+| required_990             | Are organizations in this category required to file the 990 series?                        | -   Y       |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   N       |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   NA      |
++--------------------------+--------------------------------------------------------------------------------------------+-------------+
+| option_EZ                | Are organization in this category allowed to file a 990EZ if they qualify to do so?        | -   Y       |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   N       |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   M       |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   NA      |
++--------------------------+--------------------------------------------------------------------------------------------+-------------+
+| other_filing_requirments | List of forms other than the 990 that organizations in this category are required to file. |             |
++--------------------------+--------------------------------------------------------------------------------------------+-------------+
+| govt_established         | Are organizations in this category established by a government entity?                     | -   F       |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   S       |
+|                          |                                                                                            |             |
+|                          |                                                                                            | -   N       |
++--------------------------+--------------------------------------------------------------------------------------------+-------------+
+
+### Group Label
+
+```{r}
+
+var.tab %>% 
+  datatable()
+
+```
+
+### tax_exempt_group and tax_exempt_subgroup
+
+Organizations are classified as either community and societal benefit (CSB) or mutual membership benefit (MMB). This is a category NCCS created.
+
+Community and societal benefit organizations have a primary purpose or serving the community (either large or local), or providing services to society at-large. There are two subgroups of CSB:
+
+-   GEN: General - These organizations provide a broad range of services to benefit society or their respective communities.
+
+-   COP: Community Ownership and Cooperative Operation - These organization exist to benefit specific communities through collective organization or ownership.
+
+Mutual membership benefit organizations provide services specifically to benefit their internal members. They often have restrictions on who can be a member of the organization as well as how much of their services must solely dedicated to their members. There are 5 subgroups of MMB:
+
+-   COR: Corporation -
+
+-   INS: Insurance and - These organization primary provide insurance to their members. Types of insurance include, but are not limited to, employment, health, and life.
+
+-   PEN: Pension/Retirement/Incentivized Savings - These organization provide pensions, retirement, or other incentivized saving services to their members.
+
+-   SIG: Special Interest Groups - The members of these organizations all have a special interest in common (e.g. fraternal, veterans, etc.) and provide services to their members.
+
+-   DEF: Defunct - These 501c types no longer exist. When they did exist, they provided services to their members.
+
+### donations_deductible
+
+This variable describes if donations to an organization are tax-deductible or not. The information used to create this variable is directly from the IRS (page 69-70 of [PUB557](https://www.irs.gov/pub/irs-pdf/p557.pdf), Jan. 2023).
+
+-   YU: Yes, Unlimited - Donations to an organization in this category are tax deductible.
+
+-   YR: Yes, Restricted - Donations to an organization in this category are tax deductible under certain restrictions.
+
+-   NO: No - Donations to an organization in this category are not tax deductible.
+
+-   NA: Not Applicable
+
+### political_activity
+
+This variable describes the types of political activity the organization is allowed to engage in. This information has been compiled from various sources from the IRS.
+
+-   LIM: Limited - Organizations in this category can engage in limited political activity, lobbying, and campaigning. Usually, this means these organizations can only engage in activity directly related to the mission of their organization and their political activity cannot be their primary activity.
+
+-   RES: Restricted - Organizations in this category can engage in very restricted types political activites such as lobbying for their cause. Usually, this means these organizations can only engage in advocating for causes directed related to their mission and cannot engage is partisan political activity.
+
+-   NA: Not Applicable
+
+### membership_restrictions
+
+This variable describes if there are legal membership restrictions for an organization. This information has been compiled from various sources from the IRS.
+
+-   Y: Yes - Organizations in this category have restrictions on membership. Usually this includes restrictions on people who can join (e.g. fraternal organization, veterans, etc.), how much revenue must come from membership dues (e.g. a minimum of 85%), and/or what proportion of services must be dedicated solely to members.
+
+-   N: No - These organization do not have any membership restrictions.
+
+-   NA - Not Applicable
+
+### existence_501c
+
+This variable describes if organizations exist solely through a different 501c organization. This information has been compiled from various sources from the IRS.
+
+-   Y: Yes - Organizations in this category only exist only exists to hold assets of one or multiple other 501(c) organizations. For example, a 501(c)(2) organization only exists to hold property for a different 501(c) organization.
+
+-   L: Lodge - Organization in this category are required to operate a part of the lodge system. This means there is one parent organization and multiple local chapters. Fraternal organizations are required to operate as part of the lodge system.
+
+-   N: No - Organization in this category are allowed to exist as an independent organization. They may voluntarily choose to participate in a group structure, for example, through a Group Exemption Number.
+
+### required_990
+
+This variable describes if organizations are required to annually file the 990 series with the IRS. The information used to create this variable is directly from the IRS (page 69-70 of [PUB557](https://www.irs.gov/pub/irs-pdf/p557.pdf), Jan. 2023).
+
+-   Y : Yes - Organizations in this category are required to annually file he 990 series with the IRS
+
+N: No - Organizations in this category Yare not required to annually file he 990 series with the IRS
+
+-   M: Mixed - The only tax exempt type in this category is 501(c)(3). If an organization is private foundation, they are required to file the 990-PF series. Otherwise, they file the regular 990 series.
+
+-   NA : Not Applicable - These are defunct organizations as they no longer exist so they can not longer file tax returns.
+
+### option_EZ
+
+This variable describes if organizations are allowed to file a 990-EZ if they otherwise qualify to do so (gross receipts of less than \$200,000 and total assets of less than \$500,000 at the end of their tax year). The information used to create this variable is directly from the IRS (page 69-70 of [PUB557](https://www.irs.gov/pub/irs-pdf/p557.pdf), Jan. 2023).
+
+-   Y: Yes - Organization in this category are allowed to file a 990-EZ in place of a 990 if they qualify to do so.
+
+-   N: No - Organizations in this category are never allowed to file a 990-EZ.
+
+-   NA : Not Applicable - These are defunct organizations as they no longer exist so they can not longer file tax returns.
+
+### govt_established
+
+This variable describes if organizations are established by a government entity. This information has been compiled from various sources from the IRS.
+
+-   F: Federal - Organizations in this category are established by the federal government.
+
+-   S: State - Organizations in this category are established by a state government.
+
+-   N: No - Organizations in this category are not established by a government entity.
+
+## Quick Summary Statistics
+
+### Creating Variables
+
+```{r}
+bmf <- 
+  bmf %>% 
+  left_join(var.tab, by = join_by(SUBSECCD ==label ))
+
+
+bmf %>% 
+  group_by(SUBSECCD) %>% 
+  summarise(count = n()) %>% 
+  datatable()
+```
+
+### tax_exempt_group
+
+```{r}
+
+bmf %>% 
+  group_by(tax_exempt_group) %>% 
+  summarise(count = n()) %>% 
+  datatable()
+
+
+bmf %>% 
+  group_by(tax_exempt_group, tax_exempt_subgroup) %>% 
+  summarise(count = n()) %>% 
+  datatable()
+
+```
+
+
+### donations_deductible
+
+```{r}
+bmf %>% 
+  group_by(donations_deductible) %>% 
+  summarise(count = n()) %>% 
+  datatable()
+```
+
+
+### political_activity
+
+```{r}
+bmf %>% 
+  group_by(political_activity) %>% 
+  summarise(count = n()) %>% 
+  datatable()
+```
+
+### memership_restrictions
+
+```{r}
+bmf %>% 
+  group_by(memership_restrictions) %>% 
+  summarise(count = n()) %>% 
+  datatable()
+```
+
+### existance_501c
+
+```{r}
+bmf %>% 
+  group_by(existance_501c) %>% 
+  summarise(count = n()) %>% 
+  datatable()
+```
+
+### required_990
+
+```{r}
+bmf %>% 
+  group_by(required_990) %>% 
+  summarise(count = n()) %>% 
+  datatable()
+```
+
+
+
+### option_990EZ
+
+```{r}
+bmf %>% 
+  group_by(option_990EZ) %>% 
+  summarise(count = n()) %>% 
+  datatable()
+```
+
+
+### other_filing_requirements
+
+```{r}
+bmf %>% 
+  group_by(other_filing_requirements) %>% 
+  summarise(count = n()) %>% 
+  datatable()
+```
+
+
+### govt_established
+
+```{r}
+bmf %>% 
+  group_by(govt_established) %>% 
+  summarise(count = n()) %>% 
+  datatable()
+```
