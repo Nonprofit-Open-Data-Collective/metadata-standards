@@ -29,6 +29,12 @@ var.tab <- read_excel("tax-exempt-status/501ctypes.xlsx")
 
 ```
 
+## Introduction
+
+This document is a code book for the tax-exempt status meta data standard. This standard describes the type of tax exemptions as well as some basic properties about organizations under each tax exempt status.
+
+Most sources that were used to create this standard are IRS documentation. Because the IRS does not have static links, we have saved some of the referenced documents. Most documents referenced here can be found in the nccs-handbook GitHub repository: <https://github.com/UrbanInstitute/nccs-handbook/tree/main/irs-pdfs>.
+
 ## Variables
 
 +--------------------------+--------------------------------------------------------------------------------------------+-------------+
@@ -154,19 +160,67 @@ This variable describes the types of political activity the organization is allo
 
 -   LIM: Limited - Organizations in this category can engage in limited political activity, lobbying, and campaigning. Usually, this means these organizations can only engage in activity directly related to the mission of their organization and their political activity cannot be their primary activity.
 
--   RES: Restricted - Organizations in this category can engage in very restricted types political activites such as lobbying for their cause. Usually, this means these organizations can only engage in advocating for causes directed related to their mission and cannot engage is partisan political activity.
+-   RES: Restricted - Organizations in this category can engage in very restricted types political activities such as lobbying for their cause. Usually, this means these organizations can only engage in advocating for causes directed related to their mission and cannot engage is partisan political activity.
 
 -   NA: Not Applicable
+
+Sources:
+
++-------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Description                                                             | IRS Link                                                                                                                                                                |
++=========================================================================+=========================================================================================================================================================================+
+| History of non-profit political activities                              | <https://www.irs.gov/pub/irs-tege/eotopici02.pdf>                                                                                                                       |
++-------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| History of political activities for 501(c)(4), (5), and (6)             | <https://www.irs.gov/pub/irs-tege/eotopicl03.pdf>                                                                                                                       |
++-------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Description for political activities of fraternal beneficiary societies | <https://www.irs.gov/pub/irs-tege/eotopicf04.pdf>                                                                                                                       |
+|                                                                         |                                                                                                                                                                         |
+| Page 5                                                                  |                                                                                                                                                                         |
++-------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| TAX GUIDE FOR Veterans'Organizations                                    | <https://www.irs.gov/pub/irs-pdf/p3386.pdf>                                                                                                                             |
++-------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| FAQ's about 501(c)(3) political activities                              | <https://www.irs.gov/charities-non-profits/charitable-organizations/frequently-asked-questions-about-the-ban-on-political-campaign-intervention-by-501c3-organizations> |
++-------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ### membership_restrictions
 
 This variable describes if there are legal membership restrictions for an organization. This information has been compiled from various sources from the IRS.
 
--   Y: Yes - Organizations in this category have restrictions on membership. Usually this includes restrictions on people who can join (e.g. fraternal organization, veterans, etc.), how much revenue must come from membership dues (e.g. a minimum of 85%), and/or what proportion of services must be dedicated solely to members.
+-   Y: Yes - Organizations in this category have restrictions on membership.
+
+    -   Usually this includes restrictions on people who can join (e.g. fraternal organization, veterans, etc.), how much revenue must come from membership dues (e.g. a minimum of 85%), and/or what proportion of services must be dedicated solely to members.
+
+    -   Note that MMB organization have membership restrictions as a natual function of their tax-exempt status type. Any organization that has cooperative ownership also has membership restriction for the same reason.
+
+    -   501(c)(13) Cemetery organizations have a legal membership requirement; anyone who buys a plot of land is a member. However in practice, exactly how strict these membership restrictions are vary wildly. For example, in some cemeteries anyone is allowed to buy a plot to "become a member", while other cemeteries only allow people of particular groups of people to purchase plots such as certain families, people of a specific religion, or veterans.
 
 -   N: No - These organization do not have any membership restrictions.
 
 -   NA - Not Applicable
+
++--------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| Description                                                  | IRS Link                                                                             |
++==============================================================+======================================================================================+
+| Membership restrictions of veterans organizations            | <https://www.irs.gov/charities-non-profits/other-non-profits/veterans-organizations> |
++--------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| Membership restrictions of 501(c)(5)                         | <https://www.irs.gov/pub/irs-tege/eotopicj03.pdf>                                    |
+|                                                              |                                                                                      |
+| Page J-5 to J-7                                              |                                                                                      |
++--------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| Membership restrictions of fraternal associations            | <https://www.irs.gov/pub/irs-tege/eotopicf04.pdf>                                    |
+|                                                              |                                                                                      |
+| Page 4, 8-9                                                  |                                                                                      |
++--------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| Description of 501c(13) cemeteries                           | <https://www.irs.gov/pub/irs-tege/atg_cemetery_companies.pdf>                        |
++--------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| Description of 501(c)(13) cemeteries membership restrictions | <https://www.501c3.org/death-and-taxes-understanding-501c13-cemetery-companies/>     |
++--------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| Description of 501(d) organizations.                         | <https://www.irs.gov/pub/irs-pdf/p5627.pdf>                                          |
+|                                                              |                                                                                      |
+| page 6-8                                                     |                                                                                      |
++--------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| Detailed information about 521 organizations                 | <https://www.rd.usda.gov/sites/default/files/cir44-4.pdf>                            |
++--------------------------------------------------------------+--------------------------------------------------------------------------------------+
 
 ### existence_501c
 
@@ -178,13 +232,33 @@ This variable describes if organizations exist solely through a different 501c o
 
 -   N: No - Organization in this category are allowed to exist as an independent organization. They may voluntarily choose to participate in a group structure, for example, through a Group Exemption Number.
 
++--------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Descrption                                                                                             | IRS Link                                                                                                                                                             |
++========================================================================================================+======================================================================================================================================================================+
+| Description of 501(c)(2) organizations                                                                 | <https://www.irs.gov/pub/irs-tege/eotopicc86.pdf>                                                                                                                    |
+|                                                                                                        |                                                                                                                                                                      |
+|                                                                                                        | <https://www.irs.gov/pub/irs-tege/atg_single_parent_title_hldg_corp.pdf>                                                                                             |
++--------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Information on fraternal societies                                                                     | <https://www.irs.gov/pub/irs-tege/eotopicf04.pdf>                                                                                                                    |
+|                                                                                                        |                                                                                                                                                                      |
+| Detailed information about the lodge system on pages 6-7                                               |                                                                                                                                                                      |
++--------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Description of 501(c)(25) organizations                                                                | <https://www.irs.gov/pub/irs-tege/atg_multi_parent_title_holding_cos%20.pdf>                                                                                         |
++--------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Description of 501(e) organizations                                                                    | <https://www.govinfo.gov/content/pkg/CFR-2010-title26-vol7/pdf/CFR-2010-title26-vol7-sec1-501e-1.pdf>                                                                |
+|                                                                                                        |                                                                                                                                                                      |
+| ownership requirements listed on page 45                                                               |                                                                                                                                                                      |
++--------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 501(f) - The only reliable information we can find about 501(f) organizations is the tax code itself.  | <https://answerconnect.cch.com/document/arp1209013e2c83dc562eSPLIT501f/federal/irc/current/cooperative-service-organizations-of-operating-educational-organizations> |
++--------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
 ### required_990
 
 This variable describes if organizations are required to annually file the 990 series with the IRS. The information used to create this variable is directly from the IRS (page 69-70 of [PUB557](https://www.irs.gov/pub/irs-pdf/p557.pdf), Jan. 2023).
 
 -   Y : Yes - Organizations in this category are required to annually file he 990 series with the IRS
 
-N: No - Organizations in this category Yare not required to annually file he 990 series with the IRS
+N: No - Organizations in this category are not required to annually file he 990 series with the IRS
 
 -   M: Mixed - The only tax exempt type in this category is 501(c)(3). If an organization is private foundation, they are required to file the 990-PF series. Otherwise, they file the regular 990 series.
 
@@ -202,7 +276,7 @@ This variable describes if organizations are allowed to file a 990-EZ if they ot
 
 ### govt_established
 
-This variable describes if organizations are established by a government entity. This information has been compiled from various sources from the IRS.
+This variable describes if organizations are established by a government entity. This information is clear from the name of the 501(c) type
 
 -   F: Federal - Organizations in this category are established by the federal government.
 
@@ -243,7 +317,6 @@ bmf %>%
 
 ```
 
-
 ### donations_deductible
 
 ```{r}
@@ -252,7 +325,6 @@ bmf %>%
   summarise(count = n()) %>% 
   datatable()
 ```
-
 
 ### political_activity
 
@@ -290,8 +362,6 @@ bmf %>%
   datatable()
 ```
 
-
-
 ### option_990EZ
 
 ```{r}
@@ -301,7 +371,6 @@ bmf %>%
   datatable()
 ```
 
-
 ### other_filing_requirements
 
 ```{r}
@@ -310,7 +379,6 @@ bmf %>%
   summarise(count = n()) %>% 
   datatable()
 ```
-
 
 ### govt_established
 
