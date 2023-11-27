@@ -1,0 +1,330 @@
+---
+title: "Board Of Governors Explore"
+author: "Olivia Beck"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(data.table)
+library(viridis)
+
+```
+
+## Load In Part VII Data
+
+```{r}
+years <- 2009:2013
+dat_7 <-  vector(mode = "list", length = length(years))
+keep_cols_7 <- c("EIN", "TAXYR", "F9_07_COMP_DTK_TITLE", "first_name", "suffix", "status", "gender", "gender_confidence", "F9_07_COMP_DTK_COMP_ORG", "F9_07_COMP_DTK_EMPL_BEN", "F9_07_COMP_DTK_COMP_OTH")
+
+for(i in 1:length(years)){
+  link <- paste0("https://nccs-efile.s3.us-east-1.amazonaws.com/partvii/PARTVII-", years[i], "-PEOPLEPARSED.csv")
+  temp <- fread(link, select = keep_cols_7) 
+  colnames(temp) <- c("EIN", "year", "title", "first_name", "suffix", "status", "gender", "gender_confidence", "comp_main", "comp_benefit", "comp_other" )
+  dat_7[[i]] <- temp
+}
+
+dat_all_7 <- rbindlist(dat_7)
+
+dat_all_7 <-
+  dat_all_7 %>% 
+  filter(year <= 2013)
+
+
+```
+
+
+## Load in Part I data
+
+```{r}
+dat_1 <- vector(mode = "list", length = length(years))
+keep_cols_1 <- c("ORG_EIN", "TAX_YEAR", "F9_01_ACT_GVRN_NUM_VOTE_MEMB", "F9_01_ACT_GVRN_NUM_VOTE_MEMB_IND")
+
+
+
+for(i in 1:length(years)){
+  link <- paste0("https://nccs-efile.s3.us-east-1.amazonaws.com/parsed/F9-P01-T00-SUMMARY-", years[i], ".csv")
+  temp <- fread(link, select = keep_cols_1) 
+  colnames(temp) <- c("EIN", "year", "num_vote_memb", "num_vote_memb_ind")
+  dat_1[[i]] <- temp
+}
+
+dat_all_1 <- rbindlist(dat_1)
+
+dat_all_1 <-
+  dat_all_1 %>% 
+  filter(year <= 2013)
+
+
+```
+
+## Basic Statistics 
+
+### Number of board members per year From Part VII
+
+
+```{r}
+dat_all_7 %>% 
+  group_by(EIN, year) %>% 
+  summarise(num_members = n()) %>% 
+  ungroup %>% 
+  group_by(year) %>%
+  summarise(avg_num_members = mean(num_members, na.rm=TRUE),
+            sd_num_members = sd(num_members, na.rm= TRUE))
+
+
+```
+
+```{r}
+dat_all_7 %>% 
+  group_by(EIN, year) %>% 
+  summarise(num_members = n()) %>% 
+  ungroup %>%
+  group_by(year) %>%
+  ggplot(aes(x = num_members, y = after_stat(count),
+             group = as.factor(year), color = as.factor(year) )) +
+  geom_density(adjust = 2) +
+  xlim(0, 50) +
+  ggtitle("Number of Voting Members Listed on Part VII") +
+  guides(color= guide_legend(title="Year"))+ 
+  xlab("Number of Members") +
+  ylab("Frequency")
+
+```
+
+
+### Number of board members per year From Part I
+
+
+```{r}
+#~34% of "Number of Members" are NA
+mean(is.na(dat_all_1$num_vote_memb))
+
+
+#~34% of "Number of Independent Members" are NA
+mean(is.na(dat_all_1$num_vote_memb_ind))
+
+
+dat_all_1 %>% 
+  group_by(year) %>%
+  summarise(avg_num_members = mean(num_vote_memb, na.rm=TRUE),
+            sd_num_members = sd(num_vote_memb, na.rm= TRUE),
+            avg_num_members_indep = mean(num_vote_memb_ind, na.rm=TRUE),
+            sd_num_members_indep = sd(num_vote_memb_ind, na.rm= TRUE))
+
+```
+
+These numbers do not agree with the PART VII summary statistics. 
+
+
+```{r}
+dat_all_1 %>% 
+  na.omit() %>%
+  pivot_longer(!c(EIN, year), names_to = "type", values_to = "num") %>% 
+  ggplot(aes(x = num, y = ..count..,
+             color = as.factor(type))) +
+  geom_density(adjust = 2) +
+  facet_wrap(~year) +
+  xlim(0, 50) +
+  ggtitle("Number of Voting Members Listed on Part I") +
+  guides(color=guide_legend(title="Type")) +
+  xlab("Number of Members") +
+  ylab("Frequency")
+
+
+dat_all_1 %>% 
+  na.omit() %>% 
+  filter(num_vote_memb < 100, 
+         num_vote_memb_ind < 100) %>%
+  ggplot(aes(x = num_vote_memb, y = num_vote_memb_ind )) +
+  geom_point(alpha = 0.05) +
+  facet_wrap(~year) +
+  ggtitle("Voting Members vs. Independent Voting Members") +
+  xlab("Number of Voting Members") +
+  ylab("Number of Independent Voting Members")
+
+```
+
+
+
+
+## Paid Members 
+
+```{r}
+#get number of members by org by year
+by_ein_year_7 <- 
+  dat_all_7 %>% 
+  group_by(EIN, year) %>% 
+  summarise(num_members = n()) 
+
+
+#get sum of compensation for each person per year
+num_zeros <- 
+  dat_all_7 %>%
+  rowwise() %>%
+  mutate(comp_all = sum(comp_main, comp_benefit, comp_other, na.rm = TRUE))
+
+#mark if they are zero or not
+num_zeros$comp_all_0 <- num_zeros$comp_all == 0
+
+dat_comp <-
+  num_zeros %>% 
+  filter(!comp_all_0) %>% 
+  group_by(EIN, year) %>% 
+  summarise(num_members_comp = n(),
+            avg_comp = mean(comp_all))  %>% 
+  left_join(by_ein_year_7[, c("EIN", "year", "num_members")] )
+  
+
+#number of compensated people per year
+dat_comp %>% 
+  filter(num_members < 101) %>%
+  ggplot(aes(x = num_members_comp, y = avg_comp, color = num_members)) +
+  geom_point(alpha = 0.25)+
+  facet_wrap(~year) +
+  xlim(0, 100) +
+  ylim(0, 1000000) +
+  ggtitle("Number of Compensated members Vs. Average Compensation") +
+  xlab("Number of Compensated Members") +
+  ylab("Average Total Compensation of Compensated Members")+
+  scale_color_viridis()
+  
+
+#number of board member vs number of compensated board members
+
+dat_comp %>% 
+  filter(avg_comp < 1000001) %>% 
+  ggplot(aes(x = num_members, y = num_members_comp, color = avg_comp)) +
+  geom_point(alpha = 0.25)+
+  facet_wrap(~year) +
+  xlim(0, 100) +
+  ylim(0, 100) +
+  ggtitle("Number of Members Vs. Number of Compensated Members") +
+  xlab("Number of Members") +
+  ylab("Number of Compensated Members")+
+  scale_color_viridis()
+
+
+
+```
+
+
+### Differnce in Number of Board Members From Year to Year
+
+```{r}
+### Change in Number of Board Members over the years
+## only keeping the orgs that have data in every year
+num_per_year <- 
+  by_ein_year_7 %>% 
+  pivot_wider(names_from = year, values_from = num_members) %>% 
+  na.omit() %>% 
+  relocate(EIN, all_of(as.character(years)))
+
+#get 1 year difference, set year 1 at 0 for baseline
+diff_by_year <- data.frame(EIN = num_per_year$EIN)
+diff_by_year[, 2] <- 0
+colnames(diff_by_year)[2] <- as.character(years[1])
+for(i in 2:length(years)){
+  diff_by_year[, i+1] <- num_per_year[, i+1] - num_per_year[, i]
+}
+
+
+
+diff_by_year %>% 
+  pivot_longer(!EIN, names_to = "year", values_to = "diff") %>%
+  ggplot(aes(y = diff, x = year)) +
+  geom_boxplot(outlier.shape = NA) +
+  ylim(-5, 5)  +
+  ggtitle("Differnce in Number of Board Members From Year To Year") +
+  ylab("difference from the previous year")
+
+
+diff_by_year %>% 
+  pivot_longer(!EIN, names_to = "year", values_to = "diff") %>%
+  filter(year != 2009) %>% 
+  ggplot(aes(x = diff)) +
+  geom_histogram(bins = 20) +
+  xlim(-10, 10) +
+  facet_wrap(~year) +
+  ggtitle("Differnce in Number of Board Members From Year To Year") +
+  xlab("difference from the previous year")
+
+
+```
+
+### Percentage Differnce in Number of Board Members From Year to Year
+
+```{r}
+#Percentage Change by year 
+perc_by_year <- data.frame(EIN = num_per_year$EIN)
+perc_by_year[, 2] <- 0
+colnames(perc_by_year)[2] <- as.character(years[1])
+for(i in 2:length(years)){
+  perc_by_year[, i+1] <- (num_per_year[, i+1] - num_per_year[, i]) /  num_per_year[, i] * 100
+}
+  
+perc_by_year %>% 
+  pivot_longer(!EIN, names_to = "year", values_to = "perc") %>%
+  ggplot(aes(y = perc, x = year)) +
+  geom_boxplot(outlier.shape = NA) +
+  ylim(-25, 25)  +
+  ggtitle("Percentage Differnce in Number of Board Members From Year To Year") +
+  ylab("precentage difference from the previous year")
+
+perc_by_year %>% 
+  pivot_longer(!EIN, names_to = "year", values_to = "perc") %>%
+  filter(year != 2009) %>% 
+  ggplot(aes(x = perc)) +
+  geom_histogram(bins = 20) +
+  xlim(-50, 50) +
+  facet_wrap(~year) +
+  ggtitle("Percentage Difference in Number of Board Members From Year To Year") +
+  xlab("percentage difference from the previous year")
+
+  
+```
+
+
+
+
+## Gender Percentages 
+
+```{r}
+dat_all_7 %>% 
+  group_by(EIN, year, gender) %>% 
+  summarise(num_members = n() ) %>%
+  ungroup %>%
+  group_by(year, gender) %>%
+  summarise(avg_num_members = mean(num_members, na.rm = TRUE)) %>% 
+  arrange(desc(gender)) %>%
+  ggplot(aes(x = year, y = avg_num_members, fill = fct_inorder(gender))) +
+  geom_col(position="stack") +
+  
+  ggtitle("Average Board Members By Gender") +
+  xlab("Year") +
+  ylab("Average Number of Members")  +
+  guides(fill=guide_legend(title="Gender"))
+  
+
+dat_all_7 %>% 
+  group_by(EIN, year, gender) %>% 
+  summarise(num_members = n() ) %>%
+  ungroup %>%
+  group_by(year, gender) %>%
+  summarise(avg_num_members = mean(num_members, na.rm = TRUE)) %>% 
+  arrange(desc(gender)) %>%
+  ggplot(aes(x = year, y = avg_num_members, fill = fct_inorder(gender))) +
+  geom_col(position="fill") +
+  ggtitle("Percentage of Board Members By Gender") +
+  xlab("Year") +
+  ylab("Percentage of Members") +
+  guides(fill=guide_legend(title="Gender")) 
+```
+
+
+
+
+
