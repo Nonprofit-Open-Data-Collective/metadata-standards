@@ -1,0 +1,242 @@
+---
+title: "Script to Make Board Governance Data"
+author: "Olivia Beck"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(data.table)
+
+```
+
+## Parts of 990 to Read In 
+
+### Part IV 
+
+12a. Whether obtained separate, independent audited financial statements (y/n)
+
+12b. Whether organization included in consolidated, independent audited financial statements (y/n)
+
+28a. Whether the organization a party to a business transaction with a current or former officer, director, trustee, or key employee (y/n)
+
+28b. Whether  the organization a party to a business transaction to with a family member of a current or former officer, director, trustee, or key employee (y/n)
+
+28c. Whether the organization  a party to a business transaction to with an entity of which a current or former officer, director, trustee, or key employee was an officer, director, trustee, or direct or indirect owner (y/n)
+
+29. Did the organization receive more than 25,000 in non-cash contributions?  If yes, complete schedule M. (y/n)
+
+30. Did the organization receive contributions of art, historical treasures, or other similar assets or qualified conservation contributions? If yes, complete schedule M. (y/n)
+
+*Note that if any "yes" to 29 or 30, org is required to indicate whether it has a "gift acceptance policy" in Schedule M, item 31 (y/n)
+
+### Part VI 
+
+1a. Number of Voting Members 
+1b. Number of independent voting members 
+1.schedule-O. If there are material differences in voting rights among members of the governing body, or if the governing body delegated broad authority to an executive committee or similar committee, explain on Schedule O.
+
+2. Family relationship or business relationship (y/n)
+3.  Whether used a management company or other person to perform any management duties (y/n)
+4. Whether made any significant changes to governing documents (y/n)
+5.Whether any significant diversion of assets (y/n)
+6. Whether have members or stockholders (y/n)
+
+7a. Whether have any persons who had power to elect or appoint members (y/n)
+7b. Whether decisions reserved to members other than governing body (y/n)
+
+8a.Whether documented the meetings by the governing body (y/n)
+8b. Whether documented the meetings by each committee (y/n)
+
+10a. Whether have local chapters, branches, or affiliates (y/n)
+10b. If yes, whether have a written policies governing the activities for local chapters, branches, or affiliates (y/n)
+
+11a. Whether provided a copy of Form 990 to all members before filing the form (y/n)
+
+12a. Whether have a written conflict of interest policy (y/n)
+12b. Whether officers, directors, key employees required to disclose annually interests that could give rise to conflicts? (y/n)
+12c. Whether regularly and consistently monitor and enforce compliance with the policy (y/n)
+
+
+13. Whether have a written whistleblower policy* (y/n)
+14. Whether have a written document retention and destruction policy* (y/n)
+
+15a. Whether have a process for determining compensation of the CEO, executive director, or top management officials include a review and approval by independent persons, comparability data, and deliberation decision (y/n)
+15b.  Whether have a process for determining compensation of other officers or key employees include a review and approval by independent persons, comparability data, and deliberation decision (y/n)
+
+16a. Whether invest in, contribute assets to, or participate in a joint venture or similar arrangement (y/n)
+16b. If yes, whether have a written policy or procedure to evaluate its participation in joint venture or similar arrangements (y/n)
+
+18. Whether make Forms 1023 (or 1024), 990, 990-T available for public inspection in any of the following forms: Own website, another’s website, upon request, other
+
+
+### Part XII 
+
+1.	Accounting method used to prepare the Form 990 in any of the following forms: cash, accrual, other
+
+2a. Were the financial statements compiled or reviewed by an independent accountant* (y/n)
+
+2b. Were the financial statements audited by an independent accountant* (y/n)
+
+2c. If yes to 2a or 2b, whether have a committee that assumes responsibility for oversight of the audit, review, or compilation of its financial statements and selection of an independent accountant? (y/n)
+
+3a. Was required to undergo an audit or audits (y/n)
+
+3b. If yes, did undergo the required audit or audits (y/n)
+
+
+## Load In Needed Data
+
+```{r}
+years = 2009:2013
+
+
+
+### Part IV 
+
+#initialize data
+dat_4 <-  vector(mode = "list", length = length(years))
+#get columns I want 
+keep_cols_part4 <- c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN", 
+                     "F9_04_AFS_IND_X", "F9_04_AFS_CONSOL_X",
+                     "F9_04_BIZ_TRANSAC_DTK_X", "F9_04_BIZ_TRANSAC_DTK_FAM_X", "F9_04_BIZ_TRANSAC_DTK_ENTITY_X",
+                     "F9_04_CONTR_NONCSH_MT_25K_X", 
+                     "F9_04_CONTR_ART_HIST_X")
+
+for(i in 1:length(years)){
+  link <-  paste0("https://nccs-efile.s3.us-east-1.amazonaws.com/parsed/F9-P04-T00-REQUIRED-SCHEDULES-", years[i], ".csv")
+  temp <- fread(link, select = keep_cols_part4) 
+  colnames(temp) <- c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN",
+                     "P4-LINE-12A", "P4-LINE-12B",
+                     "P4-LINE-28A", "P4-LINE-28B", "P4-LINE-28C",
+                     "P4-LINE-29", 
+                     "P4-LINE-30")
+  dat_4[[i]] <- temp
+}
+
+#clean up data
+dat_all_4 <- 
+  rbindlist(dat_4) %>% 
+  mutate( year = as.numeric(substr(RETURN_VERSION, 1, 4)))
+
+dat_all_4 <-
+  dat_all_4 %>% 
+  filter(year <= max(years))
+
+
+
+
+### Part VI 
+
+#initialize data
+dat_6 <-  vector(mode = "list", length = length(years))
+#get columns I want 
+keep_cols_part6 <- c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN", 
+                     "F9_06_INFO_SCHED_O_X", 
+                     "F9_06_GVRN_NUM_VOTING_MEMB",
+                     "F9_06_GVRN_NUM_VOTING_MEMB_IND", 
+                     "F9_06_GVRN_DTK_FAMBIZ_RELATION_X", 
+                     "F9_06_GVRN_DELEGATE_MGMT_DUTY_X",
+                     "F9_06_GVRN_CHANGE_DOC_X", 
+                     "F9_06_GVRN_ASSET_DIVERSION_X",
+                     "F9_06_GVRN_MEMB_STCKHLDR_X", 
+                     "F9_06_GVRN_PERS_ELECT_MEMB_X",
+                     "F9_06_GVRN_DECISION_APPROV_X",
+                     "F9_06_GVRN_DOC_GVRN_BODY_X",
+                     "F9_06_GVRN_DOC_COMMITTEE_X",
+                     "F9_06_POLICY_CHPTR_AFFIL_X",
+                     "F9_06_POLICY_CHPTR_REFERENCE_X",
+                     "F9_06_POLICY_FORM990_GVRN_BODY_X",
+                     "F9_06_POLICY_COI_X",
+                     "F9_06_POLICY_COI_DISCLOSURE_X",
+                     "F9_06_POLICY_COI_MONITOR_X",
+                     "F9_06_POLICY_WHSTLBLWR_X",
+                     "F9_06_POLICY_DOC_RETENTION_X",
+                     "F9_06_POLICY_COMP_PROCESS_CEO_X",
+                     "F9_06_POLICY_COMP_PROCESS_OTH_X",
+                     "F9_06_POLICY_JV_X",
+                     "F9_06_POLICY_JV_PROC_X",
+                     "F9_06_DISCLOSURE_AVBL_OTH_WEB_X")
+
+for(i in 1:length(years)){
+  link <-  paste0("https://nccs-efile.s3.us-east-1.amazonaws.com/parsed/F9-P06-T00-GOVERNANCE-", years[i], ".csv")
+  temp <- fread(link, select = keep_cols_part6) 
+  colnames(temp) <- c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN",
+                     "P4-SCHEDULE_O", 
+                     "P4-LINE-1A",
+                     "P4-LINE-1B", 
+                     "P4-LINE-2", 
+                     "P4-LINE-3",
+                     "P4-LINE-4", 
+                     "P4-LINE-5",
+                     "P4-LINE-6",
+                     "P4-LINE-7A",
+                     "P4-LINE-7B",
+                     "P4-LINE-8A",
+                     "P4-LINE-8B",
+                     "P4-LINE-10A",
+                     "P4-LINE-10B",
+                     "P4-LINE-11A",
+                     "P4-LINE-12A",
+                     "P4-LINE-12B",
+                     "P4-LINE-12C",
+                     "P4-LINE-13",
+                     "P4-LINE-14",
+                     "P4-LINE-15A",
+                     "P4-LINE-15B",
+                     "P4-LINE-16A",
+                     "P4-LINE-16B",
+                     "P4-LINE-18")
+  dat_6[[i]] <- temp
+}
+
+#clean up data
+dat_all_6 <- 
+  rbindlist(dat_6) %>% 
+  mutate( year = as.numeric(substr(RETURN_VERSION, 1, 4)))
+
+dat_all_6 <-
+  dat_all_6 %>% 
+  filter(year <= max(years))
+
+
+
+### Part XII
+
+#initialize data
+dat_12 <-  vector(mode = "list", length = length(years))
+#Keep all columns for part XII
+
+
+for(i in 1:length(years)){
+  link <-  paste0("https://nccs-efile.s3.us-east-1.amazonaws.com/parsed/F9-P12-T00-FINANCIAL-REPORTING-", years[i], ".csv")
+  temp <- fread(link) 
+  dat_12[[i]] <- temp
+}
+
+#clean up data
+dat_all_12 <- 
+  rbindlist(dat_12) %>% 
+  mutate( year = as.numeric(substr(RETURN_VERSION, 1, 4)))
+
+dat_all_12 <-
+  dat_all_12 %>% 
+  filter(year <= max(years))
+
+```
+
+## Merge all parts 
+
+```{r}
+dat_govern <-
+  dat_all_4 %>% 
+  merge(dat_all_6, by = c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN")) %>% 
+  merge(dat_all_12, by = c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN"))
+
+save(dat_govern, file = "governance/governance.Rdata")
+
+```
+
