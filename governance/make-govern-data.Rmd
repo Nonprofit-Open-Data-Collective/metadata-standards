@@ -231,10 +231,14 @@ dat_all_12 <-
 ## Merge all parts 
 
 ```{r}
+#merge 
+#filter out all EZ's
+
 dat_govern <-
   dat_all_4 %>% 
-  merge(dat_all_6, by = c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN")) %>% 
-  merge(dat_all_12, by = c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN"))
+  merge(dat_all_6, by = c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN", "year")) %>% 
+  merge(dat_all_12, by = c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN", "year")) %>% 
+  filter(RETURN_TYPE != "990EZ")
 
 save(dat_govern, file = "governance/governance.Rdata")
 
