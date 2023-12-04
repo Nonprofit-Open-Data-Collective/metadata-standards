@@ -31,7 +31,7 @@ dat_all_7 <- rbindlist(dat_7)
 
 dat_all_7 <-
   dat_all_7 %>% 
-  filter(year <= 2013)
+  filter(year <= max(years))
 
 
 ```
@@ -68,7 +68,7 @@ dat_all_1 <-
 
 ```{r}
 dat_all_7 %>% 
-  group_by(EIN, year) %>% 
+  group_by(EIN, year) %>%  ## Try grouping by URL
   summarise(num_members = n()) %>% 
   ungroup %>% 
   group_by(year) %>%
@@ -314,17 +314,181 @@ dat_all_7 %>%
   summarise(num_members = n() ) %>%
   ungroup %>%
   group_by(year, gender) %>%
+  filter(gender != "U") %>% 
   summarise(avg_num_members = mean(num_members, na.rm = TRUE)) %>% 
   arrange(desc(gender)) %>%
-  ggplot(aes(x = year, y = avg_num_members, fill = fct_inorder(gender))) +
+  mutate(avg_num_members = round(avg_num_members, 2)) %>%
+  ggplot(aes(x = as.factor(year), y = avg_num_members, fill = fct_inorder(gender))) +
   geom_col(position="fill") +
+  #geom_text(aes(label = avg_num_members), position = position_fill(vjust = 0.5)) +
+  ggtitle("Percentage of Board Members By Gender") +
+  xlab("Year") +
+  ylab("Percentage of Members") +
+  guides(fill=guide_legend(title="Gender")) 
+
+
+
+dat_all_7 %>% 
+  group_by(EIN, year, gender) %>% 
+  summarise(num_members = n() ) %>%
+  ungroup %>%
+  group_by(year, gender) %>%
+  filter(gender != "U") %>% 
+  summarise(avg_num_members = mean(num_members, na.rm = TRUE)) %>% 
+  arrange(desc(gender)) %>%
+  mutate(avg_num_members = round(avg_num_members, 2)) %>%
+  ggplot(aes(x = as.factor(year), y = avg_num_members, fill = fct_inorder(gender))) +
+  geom_col(position="fill") +
+  #geom_text(aes(label = avg_num_members), position = position_fill(vjust = 0.5)) +
   ggtitle("Percentage of Board Members By Gender") +
   xlab("Year") +
   ylab("Percentage of Members") +
   guides(fill=guide_legend(title="Gender")) 
 ```
 
+### Change in gender percentage make up of the boards 
+
+```{r}
+
+dat_all_7 %>% 
+  select(EIN, year, gender) %>% 
+  group_by(EIN, year, gender) %>% 
+  summarise(num_members = n() ) %>%
+  ungroup %>% 
+  pivot_wider(names_from = gender, values_from = num_members, values_fill = 0) %>% 
+  rowwise() %>% 
+  mutate(total = sum(M, U, `F`)) %>% 
+  mutate(pM = M / total,
+         pU = U / total,
+         pF = `F` / total) %>% 
+  group_by(year) %>% 
+  summarise(M = mean(pM),
+            U = mean(pU),
+            `F` = mean(pF))  %>% 
+  pivot_longer(!year, names_to = "gender", values_to = "avg_perc") %>% 
+  mutate(avg_perc = round(avg_perc, 2)) %>%
+  ggplot(aes(x = as.factor(year), y = avg_perc, fill = fct_inorder(gender))) +
+  geom_col(position="fill") +
+  geom_text(aes(label = avg_perc), position = position_fill(vjust = 0.5)) +
+  ggtitle("Average Gener Percentage of Board Members") +
+  xlab("Year") +
+  ylab("Percentage of Members") +
+  guides(fill=guide_legend(title="Gender")) 
+
+
+
+dat_all_7 %>% 
+  select(EIN, year, gender) %>% 
+  group_by(EIN, year, gender) %>% 
+  summarise(num_members = n() ) %>%
+  ungroup %>% 
+  pivot_wider(names_from = gender, values_from = num_members, values_fill = 0) %>% 
+  rowwise() %>% 
+  mutate(total = sum(M, `F`)) %>% 
+  mutate(pM = M / total,
+         pF = `F` / total) %>% 
+  group_by(year) %>% 
+  summarise(M = mean(pM, na.rm = T),
+            `F` = mean(pF, na.rm = T))  %>% 
+  pivot_longer(!year, names_to = "gender", values_to = "avg_perc") %>% 
+  mutate(avg_perc = round(avg_perc, 2)) %>%
+  ggplot(aes(x = as.factor(year), y = avg_perc, fill = fct_inorder(gender))) +
+  geom_col(position="fill") +
+  geom_text(aes(label = avg_perc), position = position_fill(vjust = 0.5)) +
+  ggtitle("Average Gener Percentage of Board Members") +
+  xlab("Year") +
+  ylab("Percentage of Members") +
+  guides(fill=guide_legend(title="Gender")) 
+```
+
+
+```{r}
+
+##with in org gender change 
+dat_all_7 %>% 
+  filter(year %in% c(2010, 2013)) %>% 
+  filter(gender != "U") %>%
+  select(EIN, year, gender) %>% 
+  group_by(EIN, year) %>% 
+  summarise(mm = mean(gender == "M"))  %>% 
+  ungroup() %>% 
+  pivot_wider(names_from = year, values_from = mm) %>% 
+  na.omit() %>%
+  mutate(change = `2013` - `2010` ) %>% 
+  pull(change) %>% 
+  summary()
+
+  
+
+```
+
+
+
+### Exploring some of the "U" genders + suffix
+
+Conclusion: Suffix will not be helpful for "U". All the suffix's are JR, II, III, etc. They are not gendered. 
+
+```{r}
+#first look at all of the people with "U" to see if they have a suffix
+dat_all_7 %>% 
+  filter(gender == "U") %>% 
+  filter(nchar(suffix) > 0) %>% 
+  pull(suffix) %>% 
+  table()
+
+
+
+```
 
 
 
 
+## Looking at Orgs with more independent members than members 
+
+### Find such orgs
+
+```{r}
+dat.more <- 
+  dat_all_1 %>% 
+  filter(num_vote_memb_ind > num_vote_memb)
+
+dat.more %>% 
+  ggplot(aes(x = num_vote_memb , y = num_vote_memb_ind)) + 
+  geom_point() +
+  xlab("Number of Members") +
+  ylab("Number of Independent Members") +
+  ggtitle("Orgs with more independent members than members")
+
+
+dat.more %>% 
+  filter(num_vote_memb < 100) %>%
+  filter(num_vote_memb_ind < 500) %>% 
+  ggplot(aes(x = num_vote_memb , y = num_vote_memb_ind)) + 
+  geom_point() +
+  xlab("Number of Members") +
+  ylab("Number of Independent Members") +
+  ggtitle("Orgs with more independent members than members")
+
+```
+
+### Let's investiage a few of them
+
+
+```{r}
+set.seed(100)
+dat.more %>% 
+  filter(num_vote_memb < 20) %>%
+  filter(num_vote_memb_ind < 100) %>% 
+  sample_n(1)
+
+dat.more %>% 
+  filter(num_vote_memb > 100) %>%
+  filter(num_vote_memb_ind > 200) %>% 
+  sample_n(1)
+
+
+dat.more %>% 
+  filter(num_vote_memb < 100) %>%
+  filter(num_vote_memb_ind > 200) %>% 
+  sample_n(1)
+```
