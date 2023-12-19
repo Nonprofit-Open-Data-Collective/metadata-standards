@@ -3,6 +3,9 @@ title: "Script to Make Board Governance Data"
 author: "Olivia Beck"
 date: "`r Sys.Date()`"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
@@ -13,88 +16,301 @@ library(data.table)
 
 ```
 
-## Parts of 990 to Read In 
+## Parts of 990 to Read In
 
-### Part IV 
+### Part IV
 
-12a. Whether obtained separate, independent audited financial statements (y/n)
+12a. Whether obtained separate, independent audited financial statements
+(y/n)
 
-12b. Whether organization included in consolidated, independent audited financial statements (y/n)
+12b. Whether organization included in consolidated, independent audited
+financial statements (y/n)
 
-28a. Whether the organization a party to a business transaction with a current or former officer, director, trustee, or key employee (y/n)
+28a. Whether the organization a party to a business transaction with a
+current or former officer, director, trustee, or key employee (y/n)
 
-28b. Whether  the organization a party to a business transaction to with a family member of a current or former officer, director, trustee, or key employee (y/n)
+28b. Whether the organization a party to a business transaction to with
+a family member of a current or former officer, director, trustee, or
+key employee (y/n)
 
-28c. Whether the organization  a party to a business transaction to with an entity of which a current or former officer, director, trustee, or key employee was an officer, director, trustee, or direct or indirect owner (y/n)
+28c. Whether the organization a party to a business transaction to with
+an entity of which a current or former officer, director, trustee, or
+key employee was an officer, director, trustee, or direct or indirect
+owner (y/n)
 
-29. Did the organization receive more than 25,000 in non-cash contributions?  If yes, complete schedule M. (y/n)
+29. Did the organization receive more than 25,000 in non-cash
+    contributions? If yes, complete schedule M. (y/n)
 
-30. Did the organization receive contributions of art, historical treasures, or other similar assets or qualified conservation contributions? If yes, complete schedule M. (y/n)
+30. Did the organization receive contributions of art, historical
+    treasures, or other similar assets or qualified conservation
+    contributions? If yes, complete schedule M. (y/n)
 
-*Note that if any "yes" to 29 or 30, org is required to indicate whether it has a "gift acceptance policy" in Schedule M, item 31 (y/n)
+\*Note that if any "yes" to 29 or 30, org is required to indicate
+whether it has a "gift acceptance policy" in Schedule M, item 31 (y/n)
 
-### Part VI 
+#### Part IV Code Book
 
-1a. Number of Voting Members 
-1b. Number of independent voting members 
-1.schedule-O. If there are material differences in voting rights among members of the governing body, or if the governing body delegated broad authority to an executive committee or similar committee, explain on Schedule O.
++----------------------+----------------------+----------------------+
+| Line                 | Variable             | Levels               |
++======================+======================+======================+
+| Line 12A, 12B, 28A,  | P4_LINE_12A, ...,    | -   "yes" - the      |
+| 28B, 28C, 29, 30     | P4_LINE_30           |     answer to this   |
+|                      |                      |     line is yes      |
+|                      |                      |                      |
+|                      |                      | -   "no" - the       |
+|                      |                      |     answer to this   |
+|                      |                      |     line is no       |
++----------------------+----------------------+----------------------+
 
-2. Family relationship or business relationship (y/n)
-3.  Whether used a management company or other person to perform any management duties (y/n)
-4. Whether made any significant changes to governing documents (y/n)
-5.Whether any significant diversion of assets (y/n)
-6. Whether have members or stockholders (y/n)
+### Part VI
 
-7a. Whether have any persons who had power to elect or appoint members (y/n)
-7b. Whether decisions reserved to members other than governing body (y/n)
+1a. Number of Voting Members
 
-8a.Whether documented the meetings by the governing body (y/n)
-8b. Whether documented the meetings by each committee (y/n)
+1b. Number of independent voting members
 
-10a. Whether have local chapters, branches, or affiliates (y/n)
-10b. If yes, whether have a written policies governing the activities for local chapters, branches, or affiliates (y/n)
+1.schedule-O. If there are material differences in voting rights among
+members of the governing body, or if the governing body delegated broad
+authority to an executive committee or similar committee, explain on
+Schedule O.
 
-11a. Whether provided a copy of Form 990 to all members before filing the form (y/n)
+2.  Family relationship or business relationship (y/n)
+3.  Whether used a management company or other person to perform any
+    management duties (y/n)
+4.  Whether made any significant changes to governing documents (y/n)
+    5.Whether any significant diversion of assets (y/n)
+5.  Whether have members or stockholders (y/n)
 
-12a. Whether have a written conflict of interest policy (y/n)
-12b. Whether officers, directors, key employees required to disclose annually interests that could give rise to conflicts? (y/n)
-12c. Whether regularly and consistently monitor and enforce compliance with the policy (y/n)
+7a. Whether have any persons who had power to elect or appoint members
+(y/n) 7b. Whether decisions reserved to members other than governing
+body (y/n)
 
+8a.Whether documented the meetings by the governing body (y/n) 8b.
+Whether documented the meetings by each committee (y/n)
 
-13. Whether have a written whistleblower policy* (y/n)
-14. Whether have a written document retention and destruction policy* (y/n)
+10a. Whether have local chapters, branches, or affiliates (y/n) 10b. If
+yes, whether have a written policies governing the activities for local
+chapters, branches, or affiliates (y/n)
 
-15a. Whether have a process for determining compensation of the CEO, executive director, or top management officials include a review and approval by independent persons, comparability data, and deliberation decision (y/n)
-15b.  Whether have a process for determining compensation of other officers or key employees include a review and approval by independent persons, comparability data, and deliberation decision (y/n)
+11a. Whether provided a copy of Form 990 to all members before filing
+the form (y/n)
 
-16a. Whether invest in, contribute assets to, or participate in a joint venture or similar arrangement (y/n)
-16b. If yes, whether have a written policy or procedure to evaluate its participation in joint venture or similar arrangements (y/n)
+12a. Whether have a written conflict of interest policy (y/n) 12b.
+Whether officers, directors, key employees required to disclose annually
+interests that could give rise to conflicts? (y/n) 12c. Whether
+regularly and consistently monitor and enforce compliance with the
+policy (y/n)
 
-18. Whether make Forms 1023 (or 1024), 990, 990-T available for public inspection in any of the following forms: Own website, another’s website, upon request, other
+13. Whether have a written whistleblower policy\* (y/n)
+14. Whether have a written document retention and destruction policy\*
+    (y/n)
 
+15a. Whether have a process for determining compensation of the CEO,
+executive director, or top management officials include a review and
+approval by independent persons, comparability data, and deliberation
+decision (y/n) 15b. Whether have a process for determining compensation
+of other officers or key employees include a review and approval by
+independent persons, comparability data, and deliberation decision (y/n)
 
-### Part XII 
+16a. Whether invest in, contribute assets to, or participate in a joint
+venture or similar arrangement (y/n) 16b. If yes, whether have a written
+policy or procedure to evaluate its participation in joint venture or
+similar arrangements (y/n)
 
-1.	Accounting method used to prepare the Form 990 in any of the following forms: cash, accrual, other
+18. Whether make Forms 1023 (or 1024), 990, 990-T available for public
+    inspection in any of the following forms: Own website, another's
+    website, upon request, other
 
-2a. Were the financial statements compiled or reviewed by an independent accountant* (y/n)
+#### Part VI Code Book
 
-2b. Were the financial statements audited by an independent accountant* (y/n)
++----------------------+----------------------+----------------------+
+| Line Number          | Variable Name        | Levels               |
++======================+======================+======================+
+| Line 1A, 1B          | P6_LINE_1A,          | integer value        |
+|                      | P6_LINE_1B           |                      |
++----------------------+----------------------+----------------------+
+| Line 2, 3, 4, 5, 6,  | P6_LINE_2, .... ,    | -   "yes" - the      |
+| 7A, 7B, 8A, 8B, 10A, | P6_LINE_16B          |     answer to this   |
+| 10B, 11A, 12A, 12B,  |                      |     line is yes      |
+| 12C, 13, 14, 15A,    |                      |                      |
+| 15B, 16A, 16B        |                      | -   "no" - the       |
+|                      |                      |     answer to this   |
+|                      |                      |     line is no       |
++----------------------+----------------------+----------------------+
+| Line 18              | P6_LINE_18           | -   "own_website" -  |
+|                      |                      |     the own website  |
+|                      |                      |     box on line 18   |
+|                      |                      |     is checked       |
+|                      |                      |                      |
+|                      |                      | -                    |
+|                      |                      |   "others_website" - |
+|                      |                      |     the another's    |
+|                      |                      |     website box on   |
+|                      |                      |     line 18 is       |
+|                      |                      |     checked          |
+|                      |                      |                      |
+|                      |                      | -   "request" - the  |
+|                      |                      |     upon request     |
+|                      |                      |     website box on   |
+|                      |                      |     line 18 is       |
+|                      |                      |     checked          |
+|                      |                      |                      |
+|                      |                      | -   "other" - the    |
+|                      |                      |     other box on     |
+|                      |                      |     line 18 is       |
+|                      |                      |     checked          |
++----------------------+----------------------+----------------------+
+| Line 1 Schedule O    | P6_SCHEDULE_O        | -   "X" - there is a |
+|                      |                      |     Schedule O       |
+|                      |                      |     attached to this |
+|                      |                      |     return with      |
+|                      |                      |     notes from Part  |
+|                      |                      |     VI Line 1        |
+|                      |                      |                      |
+|                      |                      | -   NA - there is no |
+|                      |                      |     Schedule O       |
+|                      |                      |     attached to this |
+|                      |                      |     return with      |
+|                      |                      |     notes from Part  |
+|                      |                      |     VI Line 1        |
++----------------------+----------------------+----------------------+
 
-2c. If yes to 2a or 2b, whether have a committee that assumes responsibility for oversight of the audit, review, or compilation of its financial statements and selection of an independent accountant? (y/n)
+### Part XII
+
+1.  Accounting method used to prepare the Form 990 in any of the
+    following forms: cash, accrual, other
+
+2a. Were the financial statements compiled or reviewed by an independent
+accountant\* (y/n)
+
+2b. Were the financial statements audited by an independent accountant\*
+(y/n)
+
+2c. If yes to 2a or 2b, whether have a committee that assumes
+responsibility for oversight of the audit, review, or compilation of its
+financial statements and selection of an independent accountant? (y/n)
 
 3a. Was required to undergo an audit or audits (y/n)
 
 3b. If yes, did undergo the required audit or audits (y/n)
 
+#### Part 12 Code Book
+
++---------------------+---------------------+---------------------+
+| Line Number         | Variable Name       | Levels              |
++=====================+=====================+=====================+
+| Line 1              | P12_LINE_01         | -   "cash" - cash   |
+|                     |                     |     accounting      |
+|                     |                     |     method          |
+|                     |                     |                     |
+|                     |                     | -   "accrual" -     |
+|                     |                     |     accrual         |
+|                     |                     |     accounting      |
+|                     |                     |     method          |
+|                     |                     |                     |
+|                     |                     | -   "other" - other |
+|                     |                     |     accounting      |
+|                     |                     |     method          |
++---------------------+---------------------+---------------------+
+| Line 1              | P12_L               | If P12_LINE_01 is   |
+|                     | I                   | "other", then this  |
+|                     | NE_01_OTHER_EXPLAIN | is what is written  |
+|                     |                     | for other           |
++---------------------+---------------------+---------------------+
+| Line 2a             | P12_LINE_2A         | -   "no" - answer   |
+|                     |                     |     to question 2a  |
+|                     |                     |     is no           |
+|                     |                     |                     |
+|                     |                     | -   "separate" -    |
+|                     |                     |     answer to       |
+|                     |                     |     question 2a is  |
+|                     |                     |     yes and the box |
+|                     |                     |     for "separate   |
+|                     |                     |     basis" is       |
+|                     |                     |     checked         |
+|                     |                     |                     |
+|                     |                     | -   "colsol" -      |
+|                     |                     |     answer to       |
+|                     |                     |     question 2a is  |
+|                     |                     |     yes and the box |
+|                     |                     |     for             |
+|                     |                     |     "consolidated   |
+|                     |                     |     basis" is       |
+|                     |                     |     checked         |
+|                     |                     |                     |
+|                     |                     | -   "both" - answer |
+|                     |                     |     to question 2a  |
+|                     |                     |     is yes and the  |
+|                     |                     |     box for "both   |
+|                     |                     |     consolidated    |
+|                     |                     |     and separate    |
+|                     |                     |     basis" is       |
+|                     |                     |     checked         |
++---------------------+---------------------+---------------------+
+| Line 2b             | P12_LINE_2B         | -   "no" - answer   |
+|                     |                     |     to question 2a  |
+| Notes: Something is |                     |     is no           |
+| wrong about this    |                     |                     |
+| coding. There are   |                     | -   "separate" -    |
+| many F              |                     |     answer to       |
+| 9                   |                     |     question 2b is  |
+| _12_FINSTAT_AUDIT_X |                     |     yes and the box |
+| == FALSE, But       |                     |     for "separate   |
+| F9_12_FIN           |                     |     basis" is       |
+| S                   |                     |     checked         |
+| TAT_AUDIT_CONSOL_X, |                     |                     |
+| F9_12\_             |                     | -   "colsol" -      |
+| F                   |                     |     answer to       |
+| INSTAT_AUDIT_SEP_X, |                     |     question 2b is  |
+| or F9_12\_          |                     |     yes and the box |
+| F                   |                     |     for             |
+| INSTAT_AUDIT_BOTH_X |                     |     "consolidated   |
+| is checked          |                     |     basis" is       |
+|                     |                     |     checked         |
+|                     |                     |                     |
+|                     |                     | -   "both" - answer |
+|                     |                     |     to question 2b  |
+|                     |                     |     is yes and the  |
+|                     |                     |     box for "both   |
+|                     |                     |     consolidated    |
+|                     |                     |     and separate    |
+|                     |                     |     basis" is       |
+|                     |                     |     checked         |
++---------------------+---------------------+---------------------+
+| Line 2C             | P12_LINE_2C         | -   "no" - answer   |
+|                     |                     |     to question 2c  |
+|                     |                     |     is no           |
+|                     |                     |                     |
+|                     |                     | -   "yes" - answer  |
+|                     |                     |     to question 2c  |
+|                     |                     |     is no           |
++---------------------+---------------------+---------------------+
+| Line 3A             | P12_LINE_3A         | -   "no" - answer   |
+|                     |                     |     to question 3a  |
+|                     |                     |     is no           |
+|                     |                     |                     |
+|                     |                     | -   "yes" - answer  |
+|                     |                     |     to question 3a  |
+|                     |                     |     is no           |
++---------------------+---------------------+---------------------+
+| Line 3B             | P12_LINE_3B         | -   "no" - answer   |
+|                     |                     |     to question 3b  |
+|                     |                     |     is no           |
+|                     |                     |                     |
+|                     |                     | -   "yes" - answer  |
+|                     |                     |     to question 3b  |
+|                     |                     |     is no           |
++---------------------+---------------------+---------------------+
 
 ## Load In Needed Data
 
 ```{r}
 years = 2009:2013
 
+```
 
+### Part IV
 
+```{r}
 ### Part IV 
 
 #initialize data
@@ -126,9 +342,21 @@ dat_all_4 <-
   dat_all_4 %>% 
   filter(year <= max(years))
 
+#standardize yes/no answers
+dat_all_4 <- 
+  dat_all_4 %>% 
+  mutate(across(starts_with("P4"), 
+                ~ case_when(
+                  . %in% c("true", "1") ~ "yes",
+                  . %in% c("false", "0") ~ "no", 
+                  TRUE ~ .
+                ))) 
 
+```
 
+### Part VI
 
+```{r}
 ### Part VI 
 
 #initialize data
@@ -159,37 +387,41 @@ keep_cols_part6 <- c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN",
                      "F9_06_POLICY_COMP_PROCESS_OTH_X",
                      "F9_06_POLICY_JV_X",
                      "F9_06_POLICY_JV_PROC_X",
-                     "F9_06_DISCLOSURE_AVBL_OTH_WEB_X")
+                     "F9_06_DISCLOSURE_AVBL_OTH_X",
+                     "F9_06_DISCLOSURE_AVBL_OTH_WEB_X",
+                     "F9_06_DISCLOSURE_AVBL_REQUEST_X",
+                     "F9_06_DISCLOSURE_AVBL_OWN_WEB_X"
+                     )
 
 for(i in 1:length(years)){
   link <-  paste0("https://nccs-efile.s3.us-east-1.amazonaws.com/parsed/F9-P06-T00-GOVERNANCE-", years[i], ".csv")
   temp <- fread(link, select = keep_cols_part6) 
   colnames(temp) <- c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN",
-                     "P4-SCHEDULE_O", 
-                     "P4-LINE-1A",
-                     "P4-LINE-1B", 
-                     "P4-LINE-2", 
-                     "P4-LINE-3",
-                     "P4-LINE-4", 
-                     "P4-LINE-5",
-                     "P4-LINE-6",
-                     "P4-LINE-7A",
-                     "P4-LINE-7B",
-                     "P4-LINE-8A",
-                     "P4-LINE-8B",
-                     "P4-LINE-10A",
-                     "P4-LINE-10B",
-                     "P4-LINE-11A",
-                     "P4-LINE-12A",
-                     "P4-LINE-12B",
-                     "P4-LINE-12C",
-                     "P4-LINE-13",
-                     "P4-LINE-14",
-                     "P4-LINE-15A",
-                     "P4-LINE-15B",
-                     "P4-LINE-16A",
-                     "P4-LINE-16B",
-                     "P4-LINE-18")
+                     "P6_SCHEDULE_O", 
+                     "P6_LINE_1A",
+                     "P6_LINE_1B", 
+                     "P6_LINE_2", 
+                     "P6_LINE_3",
+                     "P6_LINE_4", 
+                     "P6_LINE_5",
+                     "P6_LINE_6",
+                     "P6_LINE_7A",
+                     "P6_LINE_7B",
+                     "P6_LINE_8A",
+                     "P6_LINE_8B",
+                     "P6_LINE_10A",
+                     "P6_LINE_10B",
+                     "P6_LINE_11A",
+                     "P6_LINE_12A",
+                     "P6_LINE_12B",
+                     "P6_LINE_12C",
+                     "P6_LINE_13",
+                     "P6_LINE_14",
+                     "P6_LINE_15A",
+                     "P6_LINE_15B",
+                     "P6_LINE_16A",
+                     "P6_LINE_16B",
+                     "P6_LINE_18_other", "P6_LINE_18_other_web", "P6_LINE_18_req", "P6_LINE_18_own_web")
   dat_6[[i]] <- temp
 }
 
@@ -204,6 +436,31 @@ dat_all_6 <-
 
 
 
+dat_all_6 <- 
+  dat_all_6 %>% 
+  #standardize yes/no answers
+  mutate(across(paste0("P6_LINE_", c(2:6, "7A", "7B", "8A", "8B", "10A", "10B", "11A", "12A", "12B", "12C", 13, 14, "15A", "15B", "16A", "16B")) , 
+                ~ case_when(
+                  . %in% c("true", "1") ~ "yes",
+                  . %in% c("false", "0") ~ "no", 
+                  TRUE ~ .
+                )) ) %>% 
+ # Line 18
+  mutate(P6_LINE_18 = case_when(
+    P6_LINE_18_own_web == "X" ~ "own_website", 
+    P6_LINE_18_other_web == "X" ~ "others_website",
+    P6_LINE_18_req == "X" ~ "request",
+    P6_LINE_18_other == "X" ~ "other"
+  )) %>%
+  select(-c(P6_LINE_18_own_web,P6_LINE_18_other_web,P6_LINE_18_req, P6_LINE_18_other )) 
+
+
+
+```
+
+### Part XII
+
+```{r}
 ### Part XII
 
 #initialize data
@@ -217,6 +474,9 @@ for(i in 1:length(years)){
   dat_12[[i]] <- temp
 }
 
+
+
+
 #clean up data
 dat_all_12 <- 
   rbindlist(dat_12) %>% 
@@ -226,9 +486,68 @@ dat_all_12 <-
   dat_all_12 %>% 
   filter(year <= max(years))
 
+## Clean Up Variables to make them more readable
+dat_all_12 <-
+  dat_all_12 %>% 
+  ## Line 1
+  mutate(P12_LINE_01 = case_when(
+    !is.na(F9_12_FINSTAT_METHOD_ACC_OTH) ~ "other",
+    F9_12_FINSTAT_METHOD_ACC_ACCRU_X == "X" ~ "accrual",
+    F9_12_FINSTAT_METHOD_ACC_CASH_X == "X" ~ "cash"
+  )) %>% 
+  mutate(P12_LINE_01_OTHER_EXPLAIN = 
+           ifelse(P12_LINE_01 == "other", 
+                  F9_12_FINSTAT_METHOD_ACC_OTH,
+                  NA)) %>% 
+  ### Line 2a
+  mutate(temp_2a = case_when(
+    F9_12_FINSTAT_COMPILE_X %in% c("true", "1") ~ "1",
+    TRUE ~ "0",
+  )) %>% 
+  mutate(P12_LINE_2A = case_when(
+    temp_2a == "0" ~ "no",
+    F9_12_FINSTAT_COMPILE_SEP_X == "X" ~ "separate",
+    F9_12_FINSTAT_COMPILE_CONSOL_X == "X" ~ "consol",
+    F9_12_FINSTAT_COMPILE_BOTH_X == "X" ~ "both"
+  )) %>% 
+  ### Line 2b
+  mutate(temp_2b = case_when(
+    F9_12_FINSTAT_AUDIT_X %in% c("true", "1") ~ "1",
+    TRUE ~ "0",
+  ))  %>% 
+  mutate(P12_LINE_2B = case_when(
+    temp_2a == "0" ~ "no",
+    F9_12_FINSTAT_AUDIT_SEP_X == "X" ~ "separate",
+    F9_12_FINSTAT_AUDIT_CONSOL_X == "X" ~ "consol",
+    F9_12_FINSTAT_AUDIT_BOTH_X == "X" ~ "both"
+  ))%>%
+  ### Line 2c
+  mutate(P12_LINE_2C = case_when(
+    F9_12_FINSTAT_AUDIT_COMMITTEE_X %in% c("true", "1") ~ "yes",
+    TRUE ~ "no",
+  ))  %>%  
+ ### Line 3a
+  mutate(P12_LINE_3A = case_when(
+    F9_12_FINSTAT_FED_AUDIT_REQ_X %in% c("true", "1") ~ "yes",
+    TRUE ~ "no",
+  )) %>%
+  ### Line 3b
+  mutate(P12_LINE_3B = case_when(
+    F9_12_FINSTAT_FED_AUDIT_PERF_X %in% c("true", "1") ~ "yes",
+    TRUE ~ "no",
+  ))  %>% 
+  #ony keeping releveant variables
+  select(OBJECTID,URL, RETURN_VERSION,ORG_EIN,RETURN_TYPE,TAX_YEAR,
+         P12_LINE_01,P12_LINE_01_OTHER_EXPLAIN, 
+         P12_LINE_2A, P12_LINE_2B, P12_LINE_2C,
+         P12_LINE_3A, P12_LINE_3B) %>%
+  ### rename year
+  rename(year = TAX_YEAR)
+
+
 ```
 
-## Merge all parts 
+## Merge all parts
 
 ```{r}
 #merge 
@@ -240,7 +559,9 @@ dat_govern <-
   merge(dat_all_12, by = c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN", "year")) %>% 
   filter(RETURN_TYPE != "990EZ")
 
+
+
+
 save(dat_govern, file = "governance/governance.Rdata")
 
 ```
-
