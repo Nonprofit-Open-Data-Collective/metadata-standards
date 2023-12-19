@@ -491,4 +491,15 @@ dat.more %>%
   filter(num_vote_memb < 100) %>%
   filter(num_vote_memb_ind > 200) %>% 
   sample_n(1)
+
+dat.more %>% 
+  filter(num_vote_memb < 500) %>%
+  filter(num_vote_memb_ind > 500) %>% 
+  sample_n(1)
+
+dat.more %>% 
+  filter(num_vote_memb < 500) %>%
+  filter(num_vote_memb_ind > 300) %>% 
+  sample_n(3)
+
 ```
