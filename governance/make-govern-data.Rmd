@@ -50,17 +50,17 @@ whether it has a "gift acceptance policy" in Schedule M, item 31 (y/n)
 
 #### Part IV Code Book
 
-+----------------------+----------------------+----------------------+
-| Line                 | Variable             | Levels               |
-+======================+======================+======================+
-| Line 12A, 12B, 28A,  | P4_LINE_12A, ...,    | -   "yes" - the      |
-| 28B, 28C, 29, 30     | P4_LINE_30           |     answer to this   |
-|                      |                      |     line is yes      |
-|                      |                      |                      |
-|                      |                      | -   "no" - the       |
-|                      |                      |     answer to this   |
-|                      |                      |     line is no       |
-+----------------------+----------------------+----------------------+
++---------------------+---------------------+---------------------+
+| Line                | Variable            | Levels              |
++=====================+=====================+=====================+
+| Line 12A, 12B, 28A, | P4_LINE_12A, ...,   | -   "yes" - the     |
+| 28B, 28C, 29, 30    | P4_LINE_30          |     answer to this  |
+|                     |                     |     line is yes     |
+|                     |                     |                     |
+|                     |                     | -   "no" - the      |
+|                     |                     |     answer to this  |
+|                     |                     |     line is no      |
++---------------------+---------------------+---------------------+
 
 ### Part VI
 
@@ -100,8 +100,8 @@ interests that could give rise to conflicts? (y/n) 12c. Whether
 regularly and consistently monitor and enforce compliance with the
 policy (y/n)
 
-13. Whether have a written whistleblower policy\* (y/n)
-14. Whether have a written document retention and destruction policy\*
+13. Whether have a written whistleblower policy (y/n)
+14. Whether have a written document retention and destruction policy 
     (y/n)
 
 15a. Whether have a process for determining compensation of the CEO,
@@ -122,57 +122,57 @@ similar arrangements (y/n)
 
 #### Part VI Code Book
 
-+----------------------+----------------------+----------------------+
-| Line Number          | Variable Name        | Levels               |
-+======================+======================+======================+
-| Line 1A, 1B          | P6_LINE_1A,          | integer value        |
-|                      | P6_LINE_1B           |                      |
-+----------------------+----------------------+----------------------+
-| Line 2, 3, 4, 5, 6,  | P6_LINE_2, .... ,    | -   "yes" - the      |
-| 7A, 7B, 8A, 8B, 10A, | P6_LINE_16B          |     answer to this   |
-| 10B, 11A, 12A, 12B,  |                      |     line is yes      |
-| 12C, 13, 14, 15A,    |                      |                      |
-| 15B, 16A, 16B        |                      | -   "no" - the       |
-|                      |                      |     answer to this   |
-|                      |                      |     line is no       |
-+----------------------+----------------------+----------------------+
-| Line 18              | P6_LINE_18           | -   "own_website" -  |
-|                      |                      |     the own website  |
-|                      |                      |     box on line 18   |
-|                      |                      |     is checked       |
-|                      |                      |                      |
-|                      |                      | -                    |
-|                      |                      |   "others_website" - |
-|                      |                      |     the another's    |
-|                      |                      |     website box on   |
-|                      |                      |     line 18 is       |
-|                      |                      |     checked          |
-|                      |                      |                      |
-|                      |                      | -   "request" - the  |
-|                      |                      |     upon request     |
-|                      |                      |     website box on   |
-|                      |                      |     line 18 is       |
-|                      |                      |     checked          |
-|                      |                      |                      |
-|                      |                      | -   "other" - the    |
-|                      |                      |     other box on     |
-|                      |                      |     line 18 is       |
-|                      |                      |     checked          |
-+----------------------+----------------------+----------------------+
-| Line 1 Schedule O    | P6_SCHEDULE_O        | -   "X" - there is a |
-|                      |                      |     Schedule O       |
-|                      |                      |     attached to this |
-|                      |                      |     return with      |
-|                      |                      |     notes from Part  |
-|                      |                      |     VI Line 1        |
-|                      |                      |                      |
-|                      |                      | -   NA - there is no |
-|                      |                      |     Schedule O       |
-|                      |                      |     attached to this |
-|                      |                      |     return with      |
-|                      |                      |     notes from Part  |
-|                      |                      |     VI Line 1        |
-+----------------------+----------------------+----------------------+
++---------------------+---------------------+---------------------+
+| Line Number         | Variable Name       | Levels              |
++=====================+=====================+=====================+
+| Line 1A, 1B         | P6_LINE_1A,         | integer value       |
+|                     | P6_LINE_1B          |                     |
++---------------------+---------------------+---------------------+
+| Line 2, 3, 4, 5, 6, | P6_LINE_2, .... ,   | -   "yes" - the     |
+| 7A, 7B, 8A, 8B,     | P6_LINE_16B         |     answer to this  |
+| 10A, 10B, 11A, 12A, |                     |     line is yes     |
+| 12B, 12C, 13, 14,   |                     |                     |
+| 15A, 15B, 16A, 16B  |                     | -   "no" - the      |
+|                     |                     |     answer to this  |
+|                     |                     |     line is no      |
++---------------------+---------------------+---------------------+
+| Line 18             | P6_LINE_18          | -   "own_website" - |
+|                     |                     |     the own website |
+|                     |                     |     box on line 18  |
+|                     |                     |     is checked      |
+|                     |                     |                     |
+|                     |                     | -                   |
+|                     |                     |  "others_website" - |
+|                     |                     |     the another's   |
+|                     |                     |     website box on  |
+|                     |                     |     line 18 is      |
+|                     |                     |     checked         |
+|                     |                     |                     |
+|                     |                     | -   "request" - the |
+|                     |                     |     upon request    |
+|                     |                     |     website box on  |
+|                     |                     |     line 18 is      |
+|                     |                     |     checked         |
+|                     |                     |                     |
+|                     |                     | -   "other" - the   |
+|                     |                     |     other box on    |
+|                     |                     |     line 18 is      |
+|                     |                     |     checked         |
++---------------------+---------------------+---------------------+
+| Line 1 Schedule O   | P6_SCHEDULE_O       | -   "X" - there is  |
+|                     |                     |     a Schedule O    |
+|                     |                     |     attached to     |
+|                     |                     |     this return     |
+|                     |                     |     with notes from |
+|                     |                     |     Part VI Line 1  |
+|                     |                     |                     |
+|                     |                     | -   NA - there is   |
+|                     |                     |     no Schedule O   |
+|                     |                     |     attached to     |
+|                     |                     |     this return     |
+|                     |                     |     with notes from |
+|                     |                     |     Part VI Line 1  |
++---------------------+---------------------+---------------------+
 
 ### Part XII
 
@@ -195,116 +195,129 @@ financial statements and selection of an independent accountant? (y/n)
 
 #### Part 12 Code Book
 
-+---------------------+---------------------+---------------------+
-| Line Number         | Variable Name       | Levels              |
-+=====================+=====================+=====================+
-| Line 1              | P12_LINE_01         | -   "cash" - cash   |
-|                     |                     |     accounting      |
-|                     |                     |     method          |
-|                     |                     |                     |
-|                     |                     | -   "accrual" -     |
-|                     |                     |     accrual         |
-|                     |                     |     accounting      |
-|                     |                     |     method          |
-|                     |                     |                     |
-|                     |                     | -   "other" - other |
-|                     |                     |     accounting      |
-|                     |                     |     method          |
-+---------------------+---------------------+---------------------+
-| Line 1              | P12_L               | If P12_LINE_01 is   |
-|                     | I                   | "other", then this  |
-|                     | NE_01_OTHER_EXPLAIN | is what is written  |
-|                     |                     | for other           |
-+---------------------+---------------------+---------------------+
-| Line 2a             | P12_LINE_2A         | -   "no" - answer   |
-|                     |                     |     to question 2a  |
-|                     |                     |     is no           |
-|                     |                     |                     |
-|                     |                     | -   "separate" -    |
-|                     |                     |     answer to       |
-|                     |                     |     question 2a is  |
-|                     |                     |     yes and the box |
-|                     |                     |     for "separate   |
-|                     |                     |     basis" is       |
-|                     |                     |     checked         |
-|                     |                     |                     |
-|                     |                     | -   "colsol" -      |
-|                     |                     |     answer to       |
-|                     |                     |     question 2a is  |
-|                     |                     |     yes and the box |
-|                     |                     |     for             |
-|                     |                     |     "consolidated   |
-|                     |                     |     basis" is       |
-|                     |                     |     checked         |
-|                     |                     |                     |
-|                     |                     | -   "both" - answer |
-|                     |                     |     to question 2a  |
-|                     |                     |     is yes and the  |
-|                     |                     |     box for "both   |
-|                     |                     |     consolidated    |
-|                     |                     |     and separate    |
-|                     |                     |     basis" is       |
-|                     |                     |     checked         |
-+---------------------+---------------------+---------------------+
-| Line 2b             | P12_LINE_2B         | -   "no" - answer   |
-|                     |                     |     to question 2a  |
-| Notes: Something is |                     |     is no           |
-| wrong about this    |                     |                     |
-| coding. There are   |                     | -   "separate" -    |
-| many F              |                     |     answer to       |
-| 9                   |                     |     question 2b is  |
-| _12_FINSTAT_AUDIT_X |                     |     yes and the box |
-| == FALSE, But       |                     |     for "separate   |
-| F9_12_FIN           |                     |     basis" is       |
-| S                   |                     |     checked         |
-| TAT_AUDIT_CONSOL_X, |                     |                     |
-| F9_12\_             |                     | -   "colsol" -      |
-| F                   |                     |     answer to       |
-| INSTAT_AUDIT_SEP_X, |                     |     question 2b is  |
-| or F9_12\_          |                     |     yes and the box |
-| F                   |                     |     for             |
-| INSTAT_AUDIT_BOTH_X |                     |     "consolidated   |
-| is checked          |                     |     basis" is       |
-|                     |                     |     checked         |
-|                     |                     |                     |
-|                     |                     | -   "both" - answer |
-|                     |                     |     to question 2b  |
-|                     |                     |     is yes and the  |
-|                     |                     |     box for "both   |
-|                     |                     |     consolidated    |
-|                     |                     |     and separate    |
-|                     |                     |     basis" is       |
-|                     |                     |     checked         |
-+---------------------+---------------------+---------------------+
-| Line 2C             | P12_LINE_2C         | -   "no" - answer   |
-|                     |                     |     to question 2c  |
-|                     |                     |     is no           |
-|                     |                     |                     |
-|                     |                     | -   "yes" - answer  |
-|                     |                     |     to question 2c  |
-|                     |                     |     is no           |
-+---------------------+---------------------+---------------------+
-| Line 3A             | P12_LINE_3A         | -   "no" - answer   |
-|                     |                     |     to question 3a  |
-|                     |                     |     is no           |
-|                     |                     |                     |
-|                     |                     | -   "yes" - answer  |
-|                     |                     |     to question 3a  |
-|                     |                     |     is no           |
-+---------------------+---------------------+---------------------+
-| Line 3B             | P12_LINE_3B         | -   "no" - answer   |
-|                     |                     |     to question 3b  |
-|                     |                     |     is no           |
-|                     |                     |                     |
-|                     |                     | -   "yes" - answer  |
-|                     |                     |     to question 3b  |
-|                     |                     |     is no           |
-+---------------------+---------------------+---------------------+
++--------------------+--------------------+--------------------+
+| Line Number        | Variable Name      | Levels             |
++====================+====================+====================+
+| Line 1             | P12_LINE_1        | -   "cash" - cash  |
+|                    |                    |     accounting     |
+|                    |                    |     method         |
+|                    |                    |                    |
+|                    |                    | -   "accrual" -    |
+|                    |                    |     accrual        |
+|                    |                    |     accounting     |
+|                    |                    |     method         |
+|                    |                    |                    |
+|                    |                    | -   "other" -      |
+|                    |                    |     other          |
+|                    |                    |     accounting     |
+|                    |                    |     method         |
++--------------------+--------------------+--------------------+
+| Line 1             | P12_L I            | If P12_LINE_1 is   |
+|                    | N                  | "other", then this |
+|                    | E_1_OTHER_EXPLAIN  | is what is written |
+|                    |                    | for other          |
++--------------------+--------------------+--------------------+
+| Line 2a            | P12_LINE_2A        | -   "no" - answer  |
+|                    |                    |     to question 2a |
+|                    |                    |     is no          |
+|                    |                    |                    |
+|                    |                    | -   "separate" -   |
+|                    |                    |     answer to      |
+|                    |                    |     question 2a is |
+|                    |                    |     yes and the    |
+|                    |                    |     box for        |
+|                    |                    |     "separate      |
+|                    |                    |     basis" is      |
+|                    |                    |     checked        |
+|                    |                    |                    |
+|                    |                    | -   "colsol" -     |
+|                    |                    |     answer to      |
+|                    |                    |     question 2a is |
+|                    |                    |     yes and the    |
+|                    |                    |     box for        |
+|                    |                    |     "consolidated  |
+|                    |                    |     basis" is      |
+|                    |                    |     checked        |
+|                    |                    |                    |
+|                    |                    | -   "both" -       |
+|                    |                    |     answer to      |
+|                    |                    |     question 2a is |
+|                    |                    |     yes and the    |
+|                    |                    |     box for "both  |
+|                    |                    |     consolidated   |
+|                    |                    |     and separate   |
+|                    |                    |     basis" is      |
+|                    |                    |     checked        |
++--------------------+--------------------+--------------------+
+| Line 2b            | P12_LINE_2B        | -   "no" - answer  |
+|                    |                    |     to question 2a |
+| Notes: Something   |                    |     is no          |
+| is wrong about     |                    |                    |
+| this coding. There |                    | -   "separate" -   |
+| are many F 9       |                    |     answer to      |
+| \_                 |                    |     question 2b is |
+| 12_FINSTAT_AUDIT_X |                    |     yes and the    |
+| == FALSE, But      |                    |     box for        |
+| F9_12_FIN S        |                    |     "separate      |
+| T                  |                    |     basis" is      |
+| AT_AUDIT_CONSOL_X, |                    |     checked        |
+| F9_12\_ F          |                    |                    |
+| I                  |                    | -   "colsol" -     |
+| NSTAT_AUDIT_SEP_X, |                    |     answer to      |
+| or F9_12\_ F       |                    |     question 2b is |
+| I                  |                    |     yes and the    |
+| NSTAT_AUDIT_BOTH_X |                    |     box for        |
+| is checked         |                    |     "consolidated  |
+|                    |                    |     basis" is      |
+|                    |                    |     checked        |
+|                    |                    |                    |
+|                    |                    | -   "both" -       |
+|                    |                    |     answer to      |
+|                    |                    |     question 2b is |
+|                    |                    |     yes and the    |
+|                    |                    |     box for "both  |
+|                    |                    |     consolidated   |
+|                    |                    |     and separate   |
+|                    |                    |     basis" is      |
+|                    |                    |     checked        |
++--------------------+--------------------+--------------------+
+| Line 2C            | P12_LINE_2C        | -   "no" - answer  |
+|                    |                    |     to question 2c |
+|                    |                    |     is no          |
+|                    |                    |                    |
+|                    |                    | -   "yes" - answer |
+|                    |                    |     to question 2c |
+|                    |                    |     is no          |
++--------------------+--------------------+--------------------+
+| Line 3A            | P12_LINE_3A        | -   "no" - answer  |
+|                    |                    |     to question 3a |
+|                    |                    |     is no          |
+|                    |                    |                    |
+|                    |                    | -   "yes" - answer |
+|                    |                    |     to question 3a |
+|                    |                    |     is no          |
++--------------------+--------------------+--------------------+
+| Line 3B            | P12_LINE_3B        | -   "no" - answer  |
+|                    |                    |     to question 3b |
+|                    |                    |     is no          |
+|                    |                    |                    |
+|                    |                    | -   "yes" - answer |
+|                    |                    |     to question 3b |
+|                    |                    |     is no          |
++--------------------+--------------------+--------------------+
+
+### Schedule M
+
+-   Line 31 - "Does the organization have a gift acceptance policy that
+    requires the review of any nonstandard contributions? " - only used
+    if Part IV Line 29 or 30 are checked . yes/no answer.
 
 ## Load In Needed Data
 
 ```{r}
-years = 2009:2013
+#years = 2009:2013
+#do 2018
+years = 2018
 
 ```
 
@@ -326,10 +339,10 @@ for(i in 1:length(years)){
   link <-  paste0("https://nccs-efile.s3.us-east-1.amazonaws.com/parsed/F9-P04-T00-REQUIRED-SCHEDULES-", years[i], ".csv")
   temp <- fread(link, select = keep_cols_part4) 
   colnames(temp) <- c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN",
-                     "P4-LINE-12A", "P4-LINE-12B",
-                     "P4-LINE-28A", "P4-LINE-28B", "P4-LINE-28C",
-                     "P4-LINE-29", 
-                     "P4-LINE-30")
+                     "P4_LINE_12A", "P4_LINE_12B",
+                     "P4_LINE_28A", "P4_LINE_28B", "P4_LINE_28C",
+                     "P4_LINE_29", 
+                     "P4_LINE_30")
   dat_4[[i]] <- temp
 }
 
@@ -490,13 +503,13 @@ dat_all_12 <-
 dat_all_12 <-
   dat_all_12 %>% 
   ## Line 1
-  mutate(P12_LINE_01 = case_when(
+  mutate(P12_LINE_1 = case_when(
     !is.na(F9_12_FINSTAT_METHOD_ACC_OTH) ~ "other",
     F9_12_FINSTAT_METHOD_ACC_ACCRU_X == "X" ~ "accrual",
     F9_12_FINSTAT_METHOD_ACC_CASH_X == "X" ~ "cash"
   )) %>% 
-  mutate(P12_LINE_01_OTHER_EXPLAIN = 
-           ifelse(P12_LINE_01 == "other", 
+  mutate(P12_LINE_1_OTHER_EXPLAIN = 
+           ifelse(P12_LINE_1 == "other", 
                   F9_12_FINSTAT_METHOD_ACC_OTH,
                   NA)) %>% 
   ### Line 2a
@@ -538,7 +551,7 @@ dat_all_12 <-
   ))  %>% 
   #ony keeping releveant variables
   select(OBJECTID,URL, RETURN_VERSION,ORG_EIN,RETURN_TYPE,TAX_YEAR,
-         P12_LINE_01,P12_LINE_01_OTHER_EXPLAIN, 
+         P12_LINE_1,P12_LINE_1_OTHER_EXPLAIN, 
          P12_LINE_2A, P12_LINE_2B, P12_LINE_2C,
          P12_LINE_3A, P12_LINE_3B) %>%
   ### rename year
@@ -558,10 +571,61 @@ dat_govern <-
   merge(dat_all_6, by = c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN", "year")) %>% 
   merge(dat_all_12, by = c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN", "year")) %>% 
   filter(RETURN_TYPE != "990EZ")
+ 
+```
+
+
+## Pull in Schedule M only for those that said "yes" to Part IV line 29 or 30
+
+
+```{r}
+#initialize data
+dat_M <-  vector(mode = "list", length = length(years))
+#get columns I want 
+keep_cols_partM <- c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN", 
+                     "SM_01_REVIEW_PROCESS_UNUSUAL_X")
+
+for(i in 1:length(years)){
+  link <-  paste0("https://nccs-efile.s3.us-east-1.amazonaws.com/parsed/SM-P01-T00-NONCASH-CONTRIBUTIONS-", years[i], ".csv")
+  temp <- fread(link, select = keep_cols_partM) 
+  colnames(temp) <- c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN",
+                     "PM_LINE_31")
+  dat_M[[i]] <- temp
+}
 
 
 
+#clean up data
+dat_all_M <- 
+  rbindlist(dat_M) %>% 
+  mutate( year = as.numeric(substr(RETURN_VERSION, 1, 4)))
 
+dat_all_M <-
+  dat_all_M %>% 
+  filter(year <= max(years))
+
+#standardize yes/no answers
+dat_all_M <- 
+  dat_all_M %>% 
+  mutate(PM_LINE_31 = case_when(
+                  PM_LINE_31 %in% c("true", "1") ~ "yes",
+                  PM_LINE_31 %in% c("false", "0") ~ "no", 
+                  TRUE ~ NA
+                )) 
+
+
+#bind with dat_govern
+dat_govern <- 
+  dat_govern %>% 
+  left_join(dat_all_M)
+
+
+```
+
+
+## Save
+
+```{r}
 save(dat_govern, file = "governance/governance.Rdata")
 
 ```

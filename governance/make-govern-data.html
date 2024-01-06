@@ -11,7 +11,7 @@
 
 <meta name="author" content="Olivia Beck" />
 
-<meta name="date" content="2023-12-18" />
+<meta name="date" content="2024-01-03" />
 
 <title>Script to Make Board Governance Data</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">Script to Make Board Governance Data</h1>
 <h4 class="author">Olivia Beck</h4>
-<h4 class="date">2023-12-18</h4>
+<h4 class="date">2024-01-03</h4>
 
 </div>
 
@@ -387,11 +387,11 @@ whether it has a “gift acceptance policy” in Schedule M, item 31
 (y/n)</p>
 <div id="part-iv-code-book" class="section level4">
 <h4>Part IV Code Book</h4>
-<table style="width:96%;">
+<table style="width:92%;">
 <colgroup>
-<col width="31%" />
-<col width="31%" />
-<col width="31%" />
+<col width="30%" />
+<col width="30%" />
+<col width="30%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -467,11 +467,11 @@ website, upon request, other</li>
 </ol>
 <div id="part-vi-code-book" class="section level4">
 <h4>Part VI Code Book</h4>
-<table style="width:96%;">
+<table style="width:92%;">
 <colgroup>
-<col width="31%" />
-<col width="31%" />
-<col width="31%" />
+<col width="30%" />
+<col width="30%" />
+<col width="30%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -540,11 +540,11 @@ financial statements and selection of an independent accountant?
 <p>3b. If yes, did undergo the required audit or audits (y/n)</p>
 <div id="part-12-code-book" class="section level4">
 <h4>Part 12 Code Book</h4>
-<table style="width:92%;">
+<table style="width:88%;">
 <colgroup>
-<col width="30%" />
-<col width="30%" />
-<col width="30%" />
+<col width="29%" />
+<col width="29%" />
+<col width="29%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -556,17 +556,14 @@ financial statements and selection of an independent accountant?
 <tbody>
 <tr class="odd">
 <td>Line 1</td>
-<td>P12_LINE_01</td>
-<td><ul>
-<li><p>“cash” - cash accounting method</p></li>
-<li><p>“accrual” - accrual accounting method</p></li>
-<li><p>“other” - other accounting method</p></li>
-</ul></td>
+<td colspan="2">P12_LINE_1 | - “cash” - cash | | accounting | method | |
+- “accrual” - | accrual | accounting | method | | - “other” - | other |
+accounting | method</td>
 </tr>
 <tr class="even">
 <td>Line 1</td>
-<td>P12_L I NE_01_OTHER_EXPLAIN</td>
-<td>If P12_LINE_01 is “other”, then this is what is written for
+<td>P12_L I N E_1_OTHER_EXPLAIN</td>
+<td>If P12_LINE_1 is “other”, then this is what is written for
 other</td>
 </tr>
 <tr class="odd">
@@ -584,9 +581,9 @@ consolidated and separate basis” is checked</p></li>
 </tr>
 <tr class="even">
 <td><p>Line 2b</p>
-<p>Notes: Something is wrong about this coding. There are many F 9
-_12_FINSTAT_AUDIT_X == FALSE, But F9_12_FIN S TAT_AUDIT_CONSOL_X, F9_12_
-F INSTAT_AUDIT_SEP_X, or F9_12_ F INSTAT_AUDIT_BOTH_X is
+<p>Notes: Something is wrong about this coding. There are many F 9 _
+12_FINSTAT_AUDIT_X == FALSE, But F9_12_FIN S T AT_AUDIT_CONSOL_X, F9_12_
+F I NSTAT_AUDIT_SEP_X, or F9_12_ F I NSTAT_AUDIT_BOTH_X is
 checked</p></td>
 <td>P12_LINE_2B</td>
 <td><ul>
@@ -627,10 +624,20 @@ consolidated and separate basis” is checked</p></li>
 </table>
 </div>
 </div>
+<div id="schedule-m" class="section level3">
+<h3>Schedule M</h3>
+<ul>
+<li>Line 31 - “Does the organization have a gift acceptance policy that
+requires the review of any nonstandard contributions?” - only used if
+Part IV Line 29 or 30 are checked . yes/no answer.</li>
+</ul>
+</div>
 </div>
 <div id="load-in-needed-data" class="section level2">
 <h2>Load In Needed Data</h2>
-<pre class="r"><code>years = 2009:2013</code></pre>
+<pre class="r"><code>#years = 2009:2013
+#do 2018
+years = 2018</code></pre>
 <div id="part-iv-1" class="section level3">
 <h3>Part IV</h3>
 <pre class="r"><code>### Part IV 
@@ -648,10 +655,10 @@ for(i in 1:length(years)){
   link &lt;-  paste0(&quot;https://nccs-efile.s3.us-east-1.amazonaws.com/parsed/F9-P04-T00-REQUIRED-SCHEDULES-&quot;, years[i], &quot;.csv&quot;)
   temp &lt;- fread(link, select = keep_cols_part4) 
   colnames(temp) &lt;- c(&quot;OBJECTID&quot;, &quot;URL&quot;, &quot;RETURN_VERSION&quot;, &quot;ORG_EIN&quot;,
-                     &quot;P4-LINE-12A&quot;, &quot;P4-LINE-12B&quot;,
-                     &quot;P4-LINE-28A&quot;, &quot;P4-LINE-28B&quot;, &quot;P4-LINE-28C&quot;,
-                     &quot;P4-LINE-29&quot;, 
-                     &quot;P4-LINE-30&quot;)
+                     &quot;P4_LINE_12A&quot;, &quot;P4_LINE_12B&quot;,
+                     &quot;P4_LINE_28A&quot;, &quot;P4_LINE_28B&quot;, &quot;P4_LINE_28C&quot;,
+                     &quot;P4_LINE_29&quot;, 
+                     &quot;P4_LINE_30&quot;)
   dat_4[[i]] &lt;- temp
 }
 
@@ -804,13 +811,13 @@ dat_all_12 &lt;-
 dat_all_12 &lt;-
   dat_all_12 %&gt;% 
   ## Line 1
-  mutate(P12_LINE_01 = case_when(
+  mutate(P12_LINE_1 = case_when(
     !is.na(F9_12_FINSTAT_METHOD_ACC_OTH) ~ &quot;other&quot;,
     F9_12_FINSTAT_METHOD_ACC_ACCRU_X == &quot;X&quot; ~ &quot;accrual&quot;,
     F9_12_FINSTAT_METHOD_ACC_CASH_X == &quot;X&quot; ~ &quot;cash&quot;
   )) %&gt;% 
-  mutate(P12_LINE_01_OTHER_EXPLAIN = 
-           ifelse(P12_LINE_01 == &quot;other&quot;, 
+  mutate(P12_LINE_1_OTHER_EXPLAIN = 
+           ifelse(P12_LINE_1 == &quot;other&quot;, 
                   F9_12_FINSTAT_METHOD_ACC_OTH,
                   NA)) %&gt;% 
   ### Line 2a
@@ -852,7 +859,7 @@ dat_all_12 &lt;-
   ))  %&gt;% 
   #ony keeping releveant variables
   select(OBJECTID,URL, RETURN_VERSION,ORG_EIN,RETURN_TYPE,TAX_YEAR,
-         P12_LINE_01,P12_LINE_01_OTHER_EXPLAIN, 
+         P12_LINE_1,P12_LINE_1_OTHER_EXPLAIN, 
          P12_LINE_2A, P12_LINE_2B, P12_LINE_2C,
          P12_LINE_3A, P12_LINE_3B) %&gt;%
   ### rename year
@@ -868,12 +875,55 @@ dat_govern &lt;-
   dat_all_4 %&gt;% 
   merge(dat_all_6, by = c(&quot;OBJECTID&quot;, &quot;URL&quot;, &quot;RETURN_VERSION&quot;, &quot;ORG_EIN&quot;, &quot;year&quot;)) %&gt;% 
   merge(dat_all_12, by = c(&quot;OBJECTID&quot;, &quot;URL&quot;, &quot;RETURN_VERSION&quot;, &quot;ORG_EIN&quot;, &quot;year&quot;)) %&gt;% 
-  filter(RETURN_TYPE != &quot;990EZ&quot;)
+  filter(RETURN_TYPE != &quot;990EZ&quot;)</code></pre>
+</div>
+<div id="pull-in-schedule-m-only-for-those-that-said-yes-to-part-iv-line-29-or-30" class="section level2">
+<h2>Pull in Schedule M only for those that said “yes” to Part IV line 29
+or 30</h2>
+<pre class="r"><code>#initialize data
+dat_M &lt;-  vector(mode = &quot;list&quot;, length = length(years))
+#get columns I want 
+keep_cols_partM &lt;- c(&quot;OBJECTID&quot;, &quot;URL&quot;, &quot;RETURN_VERSION&quot;, &quot;ORG_EIN&quot;, 
+                     &quot;SM_01_REVIEW_PROCESS_UNUSUAL_X&quot;)
+
+for(i in 1:length(years)){
+  link &lt;-  paste0(&quot;https://nccs-efile.s3.us-east-1.amazonaws.com/parsed/SM-P01-T00-NONCASH-CONTRIBUTIONS-&quot;, years[i], &quot;.csv&quot;)
+  temp &lt;- fread(link, select = keep_cols_partM) 
+  colnames(temp) &lt;- c(&quot;OBJECTID&quot;, &quot;URL&quot;, &quot;RETURN_VERSION&quot;, &quot;ORG_EIN&quot;,
+                     &quot;PM_LINE_31&quot;)
+  dat_M[[i]] &lt;- temp
+}
 
 
 
+#clean up data
+dat_all_M &lt;- 
+  rbindlist(dat_M) %&gt;% 
+  mutate( year = as.numeric(substr(RETURN_VERSION, 1, 4)))
 
-save(dat_govern, file = &quot;governance/governance.Rdata&quot;)</code></pre>
+dat_all_M &lt;-
+  dat_all_M %&gt;% 
+  filter(year &lt;= max(years))
+
+#standardize yes/no answers
+dat_all_M &lt;- 
+  dat_all_M %&gt;% 
+  mutate(PM_LINE_31 = case_when(
+                  PM_LINE_31 %in% c(&quot;true&quot;, &quot;1&quot;) ~ &quot;yes&quot;,
+                  PM_LINE_31 %in% c(&quot;false&quot;, &quot;0&quot;) ~ &quot;no&quot;, 
+                  TRUE ~ NA
+                )) 
+
+
+#bind with dat_govern
+dat_govern &lt;- 
+  dat_govern %&gt;% 
+  left_join(dat_all_M)</code></pre>
+<pre><code>## Joining with `by = join_by(OBJECTID, URL, RETURN_VERSION, ORG_EIN, year)`</code></pre>
+</div>
+<div id="save" class="section level2">
+<h2>Save</h2>
+<pre class="r"><code>save(dat_govern, file = &quot;governance/governance.Rdata&quot;)</code></pre>
 </div>
 
 
