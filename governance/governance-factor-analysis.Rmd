@@ -525,6 +525,7 @@ fa.parallel(rho2,
 ## It suggests 6. 
 
 ##Le'ts try 6 to start
+set.seed(98435)
 poly_model2.6 = fa(features2, nfactor=6, cor="poly", fm="mle", rotate = "equamax")
 poly_model2.6$loadings
 fa.diagram(poly_model2.6)
@@ -666,7 +667,7 @@ This makes alot less sense than the factors analysis. That's fine because PCA on
 ```{r}
 
 ## Save design matrix
-save(design_mat, file = "governance/governance-design-matrix.Rdata")
+save(features2, file = "governance/governance-design-matrix.Rdata")
 
 
 ```
