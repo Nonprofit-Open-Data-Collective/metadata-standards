@@ -3,12 +3,15 @@
 get_scores <- function(feature.matrix){
   
   ### Inputs
-  # data.matrix - a n*12 matrix responses to the questions for the orgs you wish to get a score for 
+  # feature.matrix - a n*12 matrix responses to the questions for the orgs you wish to get a score for 
     # output of get_data function
     # rows are each org
     # cols are the responses to (in this order)
     # "P12_LINE_1", "P4_LINE_12", "P4_LINE_28", "P4_LINE_29_30", "P6_LINE_1", "P6_LINE_11A", 
     # "P6_LINE_15A", "P6_LINE_18", "P6_LINE_2", "P6_LINE_3", "P6_LINE_8A", "P6_LINE_12_13_14"
+  
+  ### Outputs 
+  # feature.matrix with appended 6 factor scores and total score
   
   
   load("governance/pkg-funcs/factor-objects.Rdata")
