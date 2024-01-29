@@ -666,8 +666,11 @@ This makes alot less sense than the factors analysis. That's fine because PCA on
 
 ```{r}
 
+features2_ID <- design_mat_ID 
+
 ## Save design matrix
-save(features2, file = "governance/governance-design-matrix.Rdata")
+save(features2, features2_ID,
+     file = "governance/governance-design-matrix.Rdata")
 
 
 ```
