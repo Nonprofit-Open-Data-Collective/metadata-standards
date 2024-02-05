@@ -8,6 +8,7 @@
 #' Rows represent each organization, and columns represent responses to the following questions:
 #' "P12_LINE_1", "P4_LINE_12", "P4_LINE_28", "P4_LINE_29_30", "P6_LINE_1", "P6_LINE_11A", 
 #' "P6_LINE_15A", "P6_LINE_18", "P6_LINE_2", "P6_LINE_3", "P6_LINE_8A", "P6_LINE_12_13_14".
+#' feature.matrix if a row has an NA value, the entire row will be removed in the output. 
 #'
 #' @return A data frame with the original input data and appended 6 factor scores along with a total score.
 #'
@@ -52,25 +53,36 @@ get_scores <- function(feature.matrix){
   ### Make sure data is formatted correctly -------------------------------------
   col.names.correct <- colnames(features2[, 1:12])
   
-  
   #does data have the correct colnames 
   feature.matrix <- as.data.frame(feature.matrix)
+  
   if(all(col.names.correct %in% colnames(feature.matrix))){
     temp.dat <- feature.matrix[, col.names.correct]
   }else{
-    stop("data object does not include necessary factors as columns")
+    which.missing <- !(col.names.correct %in% colnames(feature.matrix))
+    which.missing <- col.names.correct[which.missing]
+    stop(paste("data object does not include necessary factors as columns.",which.missing,"is missing." ))
   }
   
   # check matrix is entiryly of 0 and 1's 
-  temp.dat <- as.data.frame(sapply(feature.matrix, as.numeric))
-  all.0.or.1 <- all(temp.dat == 0 | temp.dat == 1) 
+  temp.dat <- as.data.frame(sapply(feature.matrix[, col.names.correct], as.numeric))
+  all.0.or.1 <- all(temp.dat == 0 | temp.dat == 1, na.rm = T) 
   if(!all.0.or.1){
     stop("data object must only have 0 or 1 entries for all factors")
   }
   
+  # removing NA rows 
+  has.na <- apply(temp.dat, 1, function(row) any(is.na(row)))
+  if(any(has.na)){
+    temp.dat <- temp.dat[!has.na, ]
+    output.sting <- paste((1:nrow(temp.dat))[has.na], collapse = ",")
+    message(paste("Rows", output.sting, "have NA values in the features. They will not be included in the output."))
+    
+  }
+  
 
   ### Get New Factor Scores -------------------------
-  scores <- factor.scores(temp.dat, #new data  
+  scores <- psych::factor.scores(temp.dat, #new data  
                           model2.6, #original fitted model of features2
                           rho = poly.cor, #polychoric correlation of features2
                           method = "Thurstone") #using regression equation to "predict" new scores. 
@@ -79,7 +91,7 @@ get_scores <- function(feature.matrix){
   scores.keep <- as.data.frame(scores$scores)
   scores.keep$total.score <- rowSums(scores.keep)
   
-  feature.matrix <- cbind(feature.matrix, scores.keep)
+  feature.matrix <- cbind(feature.matrix[!has.na, ], scores.keep)
   
   ### Return
   return(feature.matrix)
