@@ -1,0 +1,680 @@
+---
+title: "Governance - Exploratory Factor Analysis"
+author: "Olivia Beck"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This document is to run and EFA on the 2018 governance data set to late make a factor model to use to assign all orgs a "governance score".
+
+## Data and Libraries
+
+Note: Use "equamax" rotation. See <https://www.ibm.com/docs/en/spss-statistics/25.0.0?topic=analysis-factor-rotation> for details. We want independent factors, and equamax balances simplifying the factors (from varimax) and simplifying the variables (quartimax).
+
+```{r, message= FALSE}
+load("governance/governance.Rdata")
+
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(kableExtra)
+library(data.table)
+library(polycor)
+library(ggcorrplot)
+library(psych)
+```
+
+## Making Design Matrix
+
+1 is positive direction (i.e. good governance practices)
+
+0 is negative direction (i.e. bad governance practices)
+
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| Variable Name(s)       | Original Coding                             | Design Matrix Coding                                                       |
++========================+=============================================+============================================================================+
+| P4_LINE_12A            | yes/no                                      | 1 - yes to either 12A or 12B                                               |
+|                        |                                             |                                                                            |
+| P4_LINE_12B            | yes/no                                      | 0 - no to both                                                             |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P4_Line_28A, B, C      | yes/no                                      | 0 - no to all                                                              |
+|                        |                                             |                                                                            |
+|                        | yes/no                                      | 1 - yes to any of 28A, 28B, or 28C                                         |
+|                        |                                             |                                                                            |
+|                        | yes/no                                      |                                                                            |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P4_Line_29             | yes/no                                      | 1 - (29 no) or (30 no) or (29 yes and PM 31 yes) or (30 yes and PM 31 yes) |
+|                        |                                             |                                                                            |
+| P4_Line_30             | yes/no                                      | 0 - (29 yes and PM 31 no) or (30 yes and PM 31 no)                         |
+|                        |                                             |                                                                            |
+| PM_LINE_31             | yes/no/na                                   |                                                                            |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_LINE_1A, P6_LINE_1B | numeric                                     | is P6_LINE_1B / P6_LINE_1A \>= 0.75                                        |
+|                        |                                             |                                                                            |
+|                        |                                             | i.e. is the proportion of independent members at least 0.75?               |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_LINE_2              | yes/no                                      | 0/1 (no is good)                                                           |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_LINE_3              | yes/no                                      | 0/1 (no is good)                                                           |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_LINE_4              | yes/no                                      | removed, neither yes or no is not good nor bad                             |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_Line_5              | yes/no                                      | 0/1 (no is good)                                                           |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_Line_6              | yes/no                                      | removed. neither is good or bad. only answers to P6_Line_7A/B matter       |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_LINE_7A             | yes/no                                      | 0/1 (no is good)                                                           |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_Line_7B             | yes/no                                      | 0/1 (no is good)                                                           |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_LINE_10A            | yes/no                                      | 1 - (10A no) or (10A yes + 10B yes)                                        |
+|                        |                                             |                                                                            |
+| P6_LINE_10B            | yes/no/NA                                   | 0 - (10A yes + 10B no)                                                     |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_LINE_12B            | yes/no/NA                                   | 1 - (12A yes + 12B yes) or (12A no)                                        |
+|                        |                                             |                                                                            |
+|                        |                                             | 0 - (12 A yes + 12B no)                                                    |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_LINE_12C            | yes/no/NA                                   | 1 - (12A yes + 12C yes) or (12A no)                                        |
+|                        |                                             |                                                                            |
+|                        |                                             | 0 - (12 A yes + 12C no)                                                    |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_LINE_16A            | yes/no                                      | 1 - (16A no) or (16A yes + 16B yes)                                        |
+|                        |                                             |                                                                            |
+| P6_LINE_16B            | yes/no/NA                                   | 0 - (16A yes + 16B no)                                                     |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P6_LINE_18             | request/own website/another's website/other | 1 - own website                                                            |
+|                        |                                             |                                                                            |
+|                        |                                             | 0 - anything else                                                          |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| All other P6\_\*       | yes/no                                      | 1/0                                                                        |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P12_LINE_1             | Accrual/cash                                | 1 - Accrual                                                                |
+|                        |                                             |                                                                            |
+|                        |                                             | 0 - anything else                                                          |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P12_LINE_2A            | both/consol/no/seperate                     | 0 - no                                                                     |
+|                        |                                             |                                                                            |
+|                        |                                             | 1 - anything else                                                          |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P12_LINE_2B            | both/consol/no/seperate                     | 0 - no                                                                     |
+|                        |                                             |                                                                            |
+|                        |                                             | 1 - anything else                                                          |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P12_LINE_2C            | yes/no/NA                                   | 1 -( 2B yes + 2C yes ) or (2A yes + 2C yes) or (2a no ) or (2b no)         |
+|                        |                                             |                                                                            |
+|                        |                                             | 0- (2a yes and 2c no) or (2b yes and 2c no)                                |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+| P12_LINE_3A/           | yes/no                                      | 1 - (3a no) + (3a yes +3b yes)                                             |
+|                        |                                             |                                                                            |
+| P12_LINE_3B            | yes/no                                      | 0 - (3a yes + 3b no)                                                       |
++------------------------+---------------------------------------------+----------------------------------------------------------------------------+
+
+```{r}
+#For P6_LINE_1B / P6_LINE_1A >= 0.625
+indep_members_threshold <- 0.5 #this is the median value for this data set
+
+
+design_mat <- 
+  dat_govern %>% 
+  #dont need P6_SCHEDULE_O, P12_LINE_1_OTHER_EXPLAIN, RETURN TYPE
+  select(- c(P6_SCHEDULE_O, P12_LINE_1_OTHER_EXPLAIN, RETURN_TYPE, P6_LINE_4)) %>%
+  #remove all is.na in all columns except P6_LINE_10B, P6_LINE_12B, P6_LINE_12C, P6_LINE_16B, PM_LINE_31
+  filter(if_all(-c(P6_LINE_10B, P6_LINE_12B, P6_LINE_12C, P6_LINE_16B, P6_LINE_18, PM_LINE_31), 
+                ~ !is.na(.))) %>%
+  #P4 Line 12
+  mutate(P4_LINE_12 = ifelse(P4_LINE_12A == "yes" | P4_LINE_12B == "yes", 1, 0)) %>%
+  select(-c(P4_LINE_12A, P4_LINE_12B))%>%
+  #P4 line 28
+  mutate(P4_LINE_28 = ifelse(
+    P4_LINE_28A == "yes" | 
+      P4_LINE_28B == "yes" |
+      P4_LINE_28C == "yes" , 0, 1)) %>%
+  select(-c(P4_LINE_28A, P4_LINE_28B, P4_LINE_28C)) %>% 
+  #P4 line 29 and 30, Schedule M
+  mutate(P4_LINE_29_30 = case_when(
+    P4_LINE_29 == "yes" & PM_LINE_31 == "no" ~ 0,
+    P4_LINE_30 == "yes" & PM_LINE_31 == "no" ~ 0,
+    TRUE ~ 1)) %>% 
+  select(-c(P4_LINE_29, P4_LINE_30, PM_LINE_31)) %>% 
+  #P6_LINE_1 
+  filter(P6_LINE_1A != 0) %>% # remove divide by 0 errors
+  filter(P6_LINE_1A > P6_LINE_1B) %>% # only keep cases where we have more members than independent members
+  mutate(P6_LINE_1 = ifelse(P6_LINE_1B / P6_LINE_1A >= indep_members_threshold, 1, 0)) %>% 
+  select(-c(P6_LINE_1B , P6_LINE_1A )) %>%
+  #P6_LINE_2, 3, 5, 7A, 7B all have no as good and yes as bad
+  mutate_at(vars("P6_LINE_2", "P6_LINE_3", "P6_LINE_5", "P6_LINE_7A", "P6_LINE_7B") ,
+            ~ ifelse(. == "no", 1, 0)) %>%
+  #P6_Line_10
+  mutate(P6_LINE_10 = case_when(
+    P6_LINE_10A == "no"  ~ 1,
+    P6_LINE_10A == "yes" & P6_LINE_10B == "yes" ~ 1,
+    P6_LINE_10A == "yes" & P6_LINE_10B == "no"  ~ 0
+  )) %>% 
+  select(-c(P6_LINE_10A, P6_LINE_10B)) %>% 
+  #P6_LINE_12B
+  mutate(P6_LINE_12B = case_when(
+    P6_LINE_12A == "no"  ~ 1,
+    P6_LINE_12A == "yes" & P6_LINE_12B == "yes" ~ 1,
+    P6_LINE_12A == "yes" & P6_LINE_12B == "no"  ~ 0
+  )) %>% 
+  #P6_LINE_12C
+  mutate(P6_LINE_12C = case_when(
+    P6_LINE_12A == "no"  ~ 1,
+    P6_LINE_12A == "yes" & P6_LINE_12C == "yes" ~ 1,
+    P6_LINE_12A == "yes" & P6_LINE_12C == "no"  ~ 0
+  )) %>% 
+  #P6_LINE_16
+  mutate(P6_LINE_16 = case_when(
+    P6_LINE_16A == "no"  ~ 1,
+    P6_LINE_16A == "yes" & P6_LINE_16B == "yes" ~ 1,
+    P6_LINE_16A == "yes" & P6_LINE_16B == "no"  ~ 0
+  )) %>% 
+  select(-c(P6_LINE_16A, P6_LINE_16B)) %>% 
+  # P6_LINE_18 
+  mutate(P6_LINE_18 = case_when(
+    P6_LINE_18 == "own_website" ~ 1 , 
+    is.na(P6_LINE_18) ~ 0,
+    TRUE ~ 0
+  )) %>% 
+  # All other P6 yes is good, no is bad
+  mutate_at(vars( paste0("P6_LINE_", c("8A", "8B", "11A", "12A", 13, 14, "15A", "15B"))),
+            ~  ifelse(. == "yes", 1, 0)) %>% 
+  # P12_LINE_1 
+  mutate(P12_LINE_1 = ifelse(P12_LINE_1 == "accrual", 1, 0)) %>% 
+  # P12_Line_2A
+  mutate(P12_LINE_2A = ifelse(P12_LINE_2A == "no", 0, 1)) %>% 
+  # P12_Line_2B
+  mutate(P12_LINE_2B = ifelse(P12_LINE_2B == "no", 0, 1)) %>%
+  #P12_Line_2C
+  mutate(P12_LINE_2C = case_when(
+    P12_LINE_2A == "no" ~ 1,
+    P12_LINE_2B == "no" ~ 1,
+    P12_LINE_2A == "yes" & P12_LINE_2C == "yes" ~ 1,
+    P12_LINE_2B == "yes" & P12_LINE_2C == "yes" ~ 1,
+    P12_LINE_2A == "yes" & P12_LINE_2C == "no" ~ 0,
+    P12_LINE_2B == "yes" & P12_LINE_2C == "no" ~ 0,
+    TRUE ~ 0
+  )) %>%
+  #P12_Line_3
+  mutate(P12_LINE_3 = case_when(
+    P12_LINE_3A == "no" ~ 1,
+    P12_LINE_3A == "yes" & P12_LINE_3B == "yes" ~ 1,
+    P12_LINE_3A == "yes" & P12_LINE_3B == "no" ~ 0,
+    TRUE ~ 0
+  )) %>% 
+  select(-c(P12_LINE_3A, P12_LINE_3B)) 
+  
+
+#Remove P6_Line_6
+design_mat <- 
+  design_mat %>% 
+  select(-P6_LINE_6)
+
+# nothing is NA
+dim(design_mat)
+dim(na.omit(design_mat))
+
+#store ID's to remove from data set for analysis
+design_mat_ID <- design_mat[, 1:5]
+design_mat <- design_mat[, -(1:5)]
+
+
+
+     
+```
+
+## EDA
+
+## Basic Summary Tables
+
+```{r}
+tab_list <- design_mat %>%
+  map( function(x) as.data.frame(table(x) ))
+
+tab_summary <-
+  rbindlist(tab_list,
+          idcol = TRUE,
+          fill = TRUE) %>% 
+  as.data.frame() %>% 
+  mutate(x = paste0("num", x)) %>%
+  pivot_wider(names_from = "x", values_from = "Freq") %>%
+  mutate(perc0 = round(num0 / (num0 + num1), 3), 
+         perc1 = round(num1 / (num0 + num1), 3))%>% 
+  arrange(.id)
+
+tab_summary%>%
+  kable() %>% 
+  kable_styling()
+
+
+### Remove varaibles where less than 3% in either class 
+### This was as small as I could make it without the correlation matrix being singular
+### Remove P12_Line_2B because it is perfectly correlated with 2A
+### REmove P6_Line_12B, P6_Line_12C because it is causing singularity issues with P6_Line_12
+perc_threshold <- 0.02
+
+vars_keep <- 
+  tab_summary %>% 
+  filter(perc0 > perc_threshold & perc1 > perc_threshold) %>% 
+  filter(.id != "P12_LINE_2B") %>%
+  filter(.id != "P6_LINE_12B") %>%
+  filter(.id != "P6_LINE_12C") %>%
+  pull(.id) %>% 
+  sort()
+
+```
+
+### Correlation Matrix
+
+```{r}
+
+# make as factor
+design_mat_keep <- sapply(design_mat[, ..vars_keep], as.factor) #note the ..vars_keep. the ".." is deliberalty needed in datatable package updates 
+
+
+corr_mat <- hetcor(design_mat_keep, ML = TRUE) #usues maximum likelihood estimates
+
+ggcorrplot(corr_mat$correlations,
+           hc.order = TRUE ) +
+  ggtitle("Correlation Matrix") +
+  labs(subtitle = "Variables with More than 3% is either class")
+```
+
+## Factor Analysis
+
+### 2 factors
+
+```{r}
+### EFA using minimum residual
+faPC2 <- fa(r=corr_mat$correlations, 
+           nfactors=2, 
+           n.obs=nrow(design_mat), 
+           rotate="varimax")
+
+# Tucker-Lewis Index (TLI). An acceptable value must be greater over 0.9.
+faPC2$TLI
+
+#root mean square of residuals (RMSR). An acceptable value should be closer to 0. 
+faPC2$rms
+
+#loadings
+faPC2$loadings
+
+
+```
+
+We have issues were the variance is \<0. This definitely has to do with the adjusting in the last code chuck to make it positive definite.
+
+Only 55% of the variance is explained. Let's add another dimension.
+
+### 3 Factors
+
+```{r}
+### EFA using minimum residual
+faPC3 <- fa(r=corr_mat$correlations, 
+           nfactors=3, 
+           n.obs=nrow(design_mat), 
+           rotate="varimax")
+
+# Tucker-Lewis Index (TLI). An acceptable value must be greater over 0.9.
+faPC3$TLI
+
+#root mean square of residuals (RMSR). An acceptable value should be closer to 0. 
+faPC3$rms
+
+#loadings
+faPC3$loadings
+
+
+```
+
+Ultra haywood case : "An ultra-Heywood case implies that some unique factor has negative variance... Possible causes include the following:
+
+-   bad prior communality estimates
+
+-   too many common factors
+
+-   too few common factors
+
+-   not enough data to provide stable estimates
+
+-   the common factor model is not an appropriate model for the data"
+
+<https://documentation.sas.com/doc/en/pgmsascdc/9.4_3.4/statug/statug_factor_details10.htm>
+
+### Exploring Highly Correlated Variables
+
+Let's try to remove some of the near perfect correlations and see what happens:
+
+```{r}
+dat_cor <- as.data.frame(corr_mat$correlations)
+dat_cor$var1 <- rownames(dat_cor) 
+
+dat_cor%>% 
+  pivot_longer(!var1, names_to = "var2", values_to = "cor") %>% 
+  filter(var1 != var2) %>%
+  arrange(desc(abs(cor))) %>%
+  filter(abs(cor) >= 0.90)
+
+
+```
+
+First, look at correlations of P6_line 12A, 13, 14. They are quite strong so let's make a new variable. P6_Line_12_13_14 = 1 if (P6_Line_13 == yes AND P6_Line_14 == yes AND P6_Line_12A == yes) and 0 otherwise. These all get a a similar sentiment: do you have documented policies?
+
+-   P6_Line_13 = have whistleblower policy?
+
+-   P6_Line_14 = have document retention and destruction policy?
+
+-   P6_Line_12A = Whether obtained separate, independent audited financial statements (y/n)
+
+```{r}
+## All 3 are very correlated
+design_mat %>% 
+  select(P6_LINE_13, P6_LINE_14, P6_LINE_12A) %>%
+  mutate_all(as.factor) %>%
+  hetcor(ML = TRUE)
+
+## Even combing 13 and 14 is still very correlated
+design_mat %>% 
+  select(P6_LINE_13, P6_LINE_14, P6_LINE_12A) %>%
+  mutate(P6_LINE_13_14 = P6_LINE_13 == 1 & P6_LINE_14 == 1) %>%
+  select(-c(P6_LINE_13, P6_LINE_14)) %>%
+  mutate_all(as.factor) %>%
+  hetcor(ML = TRUE)
+
+design_mat <- design_mat %>% 
+  mutate(P6_LINE_12_13_14 = as.numeric(
+    P6_LINE_12A == 1 & P6_LINE_13 == 1 & P6_LINE_14 == 1)) %>%
+  select(-c(P6_LINE_12A, P6_LINE_13, P6_LINE_14)) 
+```
+
+P6_7A, 7B are all about having members or stockholders. Let's make a new variable called P6_Line_7 that says: 1 if (P6_Line_7A == yes OR P6_Line_7B == no ) and 0 otherwise. We will also removed Line 6. I think this is reasonable because it may not matter IF you have stock holders, but rather if you do, can they make decisions.
+
+-   P6_LINE_6 = Did the organization have members or stockholders?
+
+-   P6_Line_7A = Did the organization have members, stockholders, or other persons who had the power to elect one or more members of the governing body?
+
+-   P6_Line_7B = Are any governance decisions of the organization reserved to (or subject to approval by) members, stockholders, or persons other than the governing body?
+
+```{r}
+design_mat %>% 
+  select(P6_LINE_7A, P6_LINE_7B) %>%
+  mutate_all(as.factor) %>%
+  hetcor(ML = TRUE)
+
+design_mat <-
+  design_mat %>% 
+  mutate(P6_LINE_7 = as.numeric(P6_LINE_7A == 1 & P6_LINE_7B == 1)) %>% 
+  select(!c(P6_LINE_7B, P6_LINE_7A))
+```
+
+For this one, let's just keep P6_Line_15A. It get's at the main point. And most people aren't doing one or the other. Most people do both or neither.
+
+-   P6_LINE_15A = compensation review and approval for CEO?
+
+-   P6_LINE_15B = compensation review and approval for other officers and key employees?
+
+```{r}
+design_mat %>% 
+  select(P6_LINE_15A, P6_LINE_15B) %>%
+  mutate(P6_LINE_15A = as.factor(P6_LINE_15A),
+         P6_LINE_15B = as.factor(P6_LINE_15B)) %>% 
+  hetcor(ML = TRUE)
+
+design_mat <-
+  design_mat %>% 
+  select(-P6_LINE_15B)
+```
+
+I am also going to remove P6_Line_8B. It is causing non-positive-definite issues and is very highly correlated with 8A.
+
+```{r}
+design_mat <-
+  design_mat %>% 
+  select(-P6_LINE_8B)
+```
+
+#### Trying the Correlations Again without the problematic variables
+
+I decided the remove P6_Line_7 entirely because its removal makes the factors analysis incredibly clean. I will talk to Jesse about the implications of this.
+
+```{r}
+#updated the variables to keep
+#add the variables I added
+adding <- c("P6_LINE_12_13_14")
+vars_keep2 <- c(vars_keep, adding) 
+ #remove the variables I removed
+removing <- c("P6_LINE_7A", "P6_LINE_7B",
+              "P6_LINE_13", "P6_LINE_14", "P6_LINE_12", "P6_LINE_12A",
+              "P6_LINE_15B", 
+              "P6_LINE_8B",
+              "P6_LINE_7")
+
+vars_keep2 <- vars_keep2[!(vars_keep2 %in% removing)]
+
+design_mat2 <- sapply(design_mat[, ..vars_keep2], as.factor) #note the ..vars_keep. the ".." is deliberalty needed in datatable package updates 
+
+
+corr_mat2 <- hetcor(design_mat2, ML = TRUE)
+
+ggcorrplot(corr_mat2$correlations,
+           hc.order = TRUE ) +
+  ggtitle("Correlation Matrix") +
+  labs(subtitle = "Variables with More than 3% is either class")
+
+
+```
+
+### Trying factor analysis again with new set of variables
+
+```{r}
+
+features2 <-  matrix( 
+  as.numeric(design_mat2), ncol = ncol(design_mat2)) 
+
+colnames(features2) <- colnames(design_mat2)
+
+#remove 12B for some reason
+#features2 <- features2[-6, -6]
+
+## Pearson Correlation
+pear_cor2 = cor(features2)
+cor.plot(pear_cor2, numbers=T, upper=FALSE, main = "Pearson Correlation", show.legend = FALSE)
+
+## Polychoric correlation
+poly_cor2 = polychoric(features2)
+rho2 = poly_cor2$rho
+
+### Thresholds/Scaling results
+#poly_cor2$tau
+cor.plot(poly_cor2$rho, numbers=T, upper=FALSE, main = "Polychoric Correlation", show.legend = FALSE)
+
+
+
+### Plot the difference
+#quite a differnce in some places, we will stick with the poly corrs
+
+diff2 = (poly_cor2$rho - pear_cor2)*((pear_cor2>=0)*2-1)
+cor.plot(diff2, numbers=T, upper=FALSE, diag=FALSE)
+
+
+
+
+
+```
+
+There is quite a difference between Pearson and Polychoric correlation. Let's stick with the polychoric correlation.
+
+```{r}
+
+# Scree plot to find number of dimensions
+# note that this method is not designed for polychoric corr's so these are just a general place to start 
+fa.parallel(rho2, 
+            fm="pa", 
+            fa="fa", 
+            main = "Scree Plot",
+            cor = "poly",
+            nfactors = 1,
+            n.obs = nrow(design_mat_keep))
+
+## It suggests 6. 
+
+##Le'ts try 6 to start
+set.seed(98435)
+poly_model2.6 = fa(features2, nfactor=6, cor="poly", fm="mle", rotate = "equamax")
+poly_model2.6$loadings
+fa.diagram(poly_model2.6)
+
+### Let's try 5
+poly_model2.5 = fa(features2, nfactor=5, cor="poly", fm="mle", rotate = "equamax")
+poly_model2.5$loadings
+fa.diagram(poly_model2.5)
+
+### Let's try 4
+poly_model2.4 = fa(features2, nfactor=4, cor="poly", fm="mle", rotate = "equamax")
+poly_model2.4$loadings
+fa.diagram(poly_model2.4)
+
+
+```
+
+### Groupings From Factor Analysis
+
+#### 6 Factors:
+
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| Variables( good meaning)                                                                                                                                                                                                                           | Group Names                                                                          |
++====================================================================================================================================================================================================================================================+======================================================================================+
+| -   P12_Line_1: Accounting method is accural (bad is anything else)                                                                                                                                                                                | -   Have good accounting practices and documented policies                           |
+|                                                                                                                                                                                                                                                    |                                                                                      |
+| -   P4_Line_12: The organization obtains separate, independent audited financial statements                                                                                                                                                        |                                                                                      |
+|                                                                                                                                                                                                                                                    |                                                                                      |
+| -   P6_Line_12_13_14: The organization has a written conflict of interest policy, a written whistleblower policy, and a written retention and destruction policy                                                                                   |                                                                                      |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| -   P6_LINE_8A: The meetings by the governing body are documented                                                                                                                                                                                  | -   Open documenting of organizational business                                      |
+|                                                                                                                                                                                                                                                    |                                                                                      |
+|     -   Correlated with 8b. meetings by each committee are documented                                                                                                                                                                              |                                                                                      |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| -   P6_LINE_15A: The org has a process for determining compensation of the CEO, executive director, or top management officials including a review and approval by independent persons, comparability data, and deliberation decision              | -   Good policies for making the board and for paying them                           |
+|                                                                                                                                                                                                                                                    |                                                                                      |
+|     -   Correlated with Line 15b. The org has a process for determining compensation of other officers or key employees includin a review and approval by independent persons, comparability data, and deliberation decision                       |                                                                                      |
+|                                                                                                                                                                                                                                                    |                                                                                      |
+| -   P6_Line_1: The percent of independent members on the voting board is \>50%                                                                                                                                                                     |                                                                                      |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| -   (Negative) P6_LINE_3: The org did not use a management company or other person to perform any management duties                                                                                                                                | -   The or ?did? using a management company                                          |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| -   P6_Line_11A: A copy of Form 990 is provided to all members before filing the form                                                                                                                                                              | -   IRS forms are available for public inspection                                    |
+|                                                                                                                                                                                                                                                    |                                                                                      |
+| -   P6_Line_18: Forms 1023 (or 1024), 990, 990-T available for public inspection on own website                                                                                                                                                    |                                                                                      |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------+
+| -   (Negative) P4_Line_28: The org was **not** a party to a business transaction to with an entity of which a current or former officer, director, trustee, or key employee was an officer, director, trustee, or direct or indirect owner         | -   These are all about doing business with family or having large/expensive assests |
+|                                                                                                                                                                                                                                                    |                                                                                      |
+| -   (Negative) P6_Line_2: **No** officer, director, trustee, or key employee had a family relationship or a business relationship with any other officer, director, trustee, or key employee?                                                      |                                                                                      |
+|                                                                                                                                                                                                                                                    |                                                                                      |
+| -   (Negative) P4_Line_29: Either (the org did not have more than \$25K in cash contribution AND did not have receive any art/historical treasures/etc.) OR (they do have those things AND they do have a written policy about how to handle them) |                                                                                      |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------+
+
+#### 5 Factors:
+
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------+
+| Variables( good meaning)                                                                                                                                                                                                                           | Group Names                                                    |
++====================================================================================================================================================================================================================================================+================================================================+
+| -   P12_Line_1: Accounting method is accural (bad is anything else)                                                                                                                                                                                | -   Have good accounting practices                             |
+|                                                                                                                                                                                                                                                    |                                                                |
+| -   P4_Line_12: The organization obtains separate, independent audited financial statements                                                                                                                                                        |                                                                |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------+
+| -   P6_LINE_8A: The meetings by the governing body are documented                                                                                                                                                                                  | -   Open documenting of organizational business                |
+|                                                                                                                                                                                                                                                    |                                                                |
+|     -   Correlated with 8b. meetings by each committee are documented                                                                                                                                                                              |                                                                |
+|                                                                                                                                                                                                                                                    |                                                                |
+| -   P6_Line_11A: A copy of Form 990 is provided to all members before filing the form                                                                                                                                                              |                                                                |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------+
+| -   P6_LINE_15A: The org has a process for determining compensation of the CEO, executive director, or top management officials including a review and approval by independent persons, comparability data, and deliberation decision              | -   Having written policies available for inspection           |
+|                                                                                                                                                                                                                                                    |                                                                |
+|     -   Correlated with Line 15b. The org has a process for determining compensation of other officers or key employees includin a review and approval by independent persons, comparability data, and deliberation decision                       |                                                                |
+|                                                                                                                                                                                                                                                    |                                                                |
+| -   P6_Line_12_13_14: The organization has a written conflict of interest policy, a written whistleblower policy, and a written retention and destruction policy                                                                                   |                                                                |
+|                                                                                                                                                                                                                                                    |                                                                |
+| -   P6_Line_18: Forms 1023 (or 1024), 990, 990-T available for public inspection on own website                                                                                                                                                    |                                                                |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------+
+| -   P6_LINE_3: The org did not use a management company or other person to perform any management duties                                                                                                                                           | -   no "subcontracting" management duties                      |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------+
+| -   P6_Line_1: The percent of independent members on the voting board is \>50%                                                                                                                                                                     | -   This is something about having independent voting members. |
+|                                                                                                                                                                                                                                                    |                                                                |
+| -   (Negative) P4_Line_28: The org was **not** a party to a business transaction to with an entity of which a current or former officer, director, trustee, or key employee was an officer, director, trustee, or direct or indirect owner         |                                                                |
+|                                                                                                                                                                                                                                                    |                                                                |
+| -   (Negative) P6_Line_2: **No** officer, director, trustee, or key employee had a family relationship or a business relationship with any other officer, director, trustee, or key employee?                                                      |                                                                |
+|                                                                                                                                                                                                                                                    |                                                                |
+| -   (Negative) P4_Line_29: Either (the org did not have more than \$25K in cash contribution AND did not have receive any art/historical treasures/etc.) OR (they do have those things AND they do have a written policy about how to handle them) |                                                                |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------+
+
+#### 4 Factors:
+
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------+
+| Variable Names                                                                                                                                                                                                                                     | Potential Group                                                                                          |
++====================================================================================================================================================================================================================================================+==========================================================================================================+
+| -   P12_Line_1: Accounting method is accural (bad is anything else)                                                                                                                                                                                | -   Have good accounting practices and documented policies                                               |
+|                                                                                                                                                                                                                                                    |                                                                                                          |
+| -   P4_Line_12: The organization obtains separate, independent audited financial statements                                                                                                                                                        |                                                                                                          |
+|                                                                                                                                                                                                                                                    |                                                                                                          |
+| -   P6_Line_12_13_14: The organization has a written conflict of interest policy, a written whistleblower policy, and a written retention and destruction policy                                                                                   |                                                                                                          |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------+
+| -   P6_LINE_8A: The meetings by the governing body are documented                                                                                                                                                                                  | -   These are all about the governing body, the hiring process, the documentation, and the tax documents |
+|                                                                                                                                                                                                                                                    |                                                                                                          |
+|     -   Correlated with 8b. meetings by each committee are documented                                                                                                                                                                              |                                                                                                          |
+|                                                                                                                                                                                                                                                    |                                                                                                          |
+| -   P6_Line_11A: A copy of Form 990 is provided to all members before filing the form                                                                                                                                                              |                                                                                                          |
+|                                                                                                                                                                                                                                                    |                                                                                                          |
+| -   P6_LINE_15A: The org has a process for determining compensation of the CEO, executive director, or top management officials including a review and approval by independent persons, comparability data, and deliberation decision              |                                                                                                          |
+|                                                                                                                                                                                                                                                    |                                                                                                          |
+|     -   Correlated with Line 15b. The org has a process for determining compensation of other officers or key employees including a review and approval by independent persons, comparability data, and deliberation decision                      |                                                                                                          |
+|                                                                                                                                                                                                                                                    |                                                                                                          |
+| -   P6_Line_1: The percent of independent members on the voting board is \>50%                                                                                                                                                                     |                                                                                                          |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------+
+| -   (Negative) P4_Line_28: The org was **not** a party to a business transaction to with an entity of which a current or former officer, director, trustee, or key employee was an officer, director, trustee, or direct or indirect owner         | -   About family relationships                                                                           |
+|                                                                                                                                                                                                                                                    |                                                                                                          |
+| -   (Negative) P6_Line_2: **No** officer, director, trustee, or key employee had a family relationship or a business relationship with any other officer, director, trustee, or key employee?                                                      |                                                                                                          |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------+
+| -   P6_LINE_3: The org did not use a management company or other person to perform any management duties                                                                                                                                           | -   IDK about this one                                                                                   |
+|                                                                                                                                                                                                                                                    |                                                                                                          |
+| -   P6_Line_18: Forms 1023 (or 1024), 990, 990-T available for public inspection on own website                                                                                                                                                    |                                                                                                          |
+|                                                                                                                                                                                                                                                    |                                                                                                          |
+| -   (Negative) P4_Line_29: Either (the org did not have more than \$25K in cash contribution AND did not have receive any art/historical treasures/etc.) OR (they do have those things AND they do have a written policy about how to handle them) |                                                                                                          |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------+
+
+#### 
+
+## PCA
+
+### 4 Factors
+
+```{r}
+pca.out <- principal(rho2, nfactors = 4, rotate = "equamax")
+
+fa.diagram(pca.out) 
+
+```
+
+This makes alot less sense than the factors analysis. That's fine because PCA only does the "veramax" transformation.
+
+## Save design matrix
+
+```{r}
+
+features2_ID <- design_mat_ID 
+
+## Save design matrix
+save(features2, features2_ID,
+     file = "governance/governance-design-matrix.Rdata")
+
+
+```
+
+## Results
+
+We are choosing to use the 6 factor model for assigning factor scores.
