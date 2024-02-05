@@ -1,18 +1,60 @@
-#### Function to get features matrix for a list of ein+year pairs 
+#' Function to get features matrix for a list of ein+year pairs
+#'
+#' This function takes a data.frame with columns ORG_EIN and correct inputs from 990 Part IV, VI, and XII.
+#' 
+#' @param dat A data.frame with columns ORG_EIN and correct inputs from 990 Part IV, VI, and XII.
+#'   ORG_EIN must be a character string of 9 digits.
+#' 
+#' @details
+#' There are the variables from each Part/Schedule that is needed to run this function 
+#' 
+#' Variables from Part IV: "F9_04_AFS_IND_X", "F9_04_AFS_CONSOL_X", "F9_04_BIZ_TRANSAC_DTK_X", 
+#' "F9_04_BIZ_TRANSAC_DTK_FAM_X", "F9_04_BIZ_TRANSAC_DTK_ENTITY_X", "F9_04_CONTR_NONCSH_MT_25K_X", 
+#' "F9_04_CONTR_ART_HIST_X".
+#' 
+#' Variables from Part VI: "F9_06_GVRN_NUM_VOTING_MEMB", "F9_06_GVRN_NUM_VOTING_MEMB_IND", 
+#' "F9_06_GVRN_DTK_FAMBIZ_RELATION_X", "F9_06_GVRN_DELEGATE_MGMT_DUTY_X", "F9_06_GVRN_DOC_GVRN_BODY_X", 
+#' "F9_06_POLICY_FORM990_GVRN_BODY_X", "F9_06_POLICY_COI_X", "F9_06_POLICY_COI_DISCLOSURE_X", 
+#' "F9_06_POLICY_COI_MONITOR_X", "F9_06_POLICY_WHSTLBLWR_X", "F9_06_POLICY_DOC_RETENTION_X", 
+#' "F9_06_POLICY_COMP_PROCESS_CEO_X", "F9_06_DISCLOSURE_AVBL_OTH_X", "F9_06_DISCLOSURE_AVBL_OTH_WEB_X", 
+#' "F9_06_DISCLOSURE_AVBL_REQUEST_X", "F9_06_DISCLOSURE_AVBL_OWN_WEB_X".
+#' 
+#' Variables from Part XII: "F9_12_FINSTAT_METHOD_ACC_OTH", "F9_12_FINSTAT_METHOD_ACC_ACCRU_X", 
+#' "F9_12_FINSTAT_METHOD_ACC_CASH_X".
+#' 
+#' Variables from Schedule M: "SM_01_REVIEW_PROCESS_UNUSUAL_X".
+#' 
+#' @return
+#' A data.frame appended with features needed to run the \code{\link{get_scores}} function.
+#' 
+#' @export
+
 
 get_features <- function(dat){
   
   ### Input 
   # dat = data.frame with columns ORG_EIN and correct inputs from 990 Part IV, VI, and XII
     # ORG_EIN must be a character string of 9 digits
-  # Columns from Part IV : "F9_04_AFS_IND_X", "F9_04_AFS_CONSOL_X",
+  
+  # Variables from Part IV : "F9_04_AFS_IND_X", "F9_04_AFS_CONSOL_X",
   # "F9_04_BIZ_TRANSAC_DTK_X", "F9_04_BIZ_TRANSAC_DTK_FAM_X", "F9_04_BIZ_TRANSAC_DTK_ENTITY_X",
   # "F9_04_CONTR_NONCSH_MT_25K_X", 
   # "F9_04_CONTR_ART_HIST_X"
   
-  # Columns from Part VI 
+  # Variables from Part VI 
+  # "F9_06_GVRN_NUM_VOTING_MEMB", "F9_06_GVRN_NUM_VOTING_MEMB_IND", "F9_06_GVRN_DTK_FAMBIZ_RELATION_X", 
+  # "F9_06_GVRN_DELEGATE_MGMT_DUTY_X", "F9_06_GVRN_DOC_GVRN_BODY_X", "F9_06_POLICY_FORM990_GVRN_BODY_X", 
+  # "F9_06_POLICY_COI_X", "F9_06_POLICY_COI_DISCLOSURE_X", "F9_06_POLICY_COI_MONITOR_X", 
+  # "F9_06_POLICY_WHSTLBLWR_X", "F9_06_POLICY_DOC_RETENTION_X", "F9_06_POLICY_COMP_PROCESS_CEO_X", 
+  # "F9_06_DISCLOSURE_AVBL_OTH_X", "F9_06_DISCLOSURE_AVBL_OTH_WEB_X",  "F9_06_DISCLOSURE_AVBL_REQUEST_X", 
+  # "F9_06_DISCLOSURE_AVBL_OWN_WEB_X"
   
+  # Variables from Part XII 
+  # "F9_12_FINSTAT_METHOD_ACC_OTH", "F9_12_FINSTAT_METHOD_ACC_ACCRU_X", "F9_12_FINSTAT_METHOD_ACC_CASH_X"
   
+  # Variables from Schedule M
+  # SM_01_REVIEW_PROCESS_UNUSUAL_X
+
   ### Outputs
   # dat appended with features needed to run get_scores function
   
@@ -184,7 +226,7 @@ get_features <- function(dat){
     dplyr::relocate(ORG_EIN)
   
   
-  ### Part XI Wrangling ----------------------------------------------------
+  ### Part XII Wrangling ----------------------------------------------------
   dat_12 <- dat[, keep_cols_part12 ]
 
   
@@ -226,56 +268,17 @@ get_features <- function(dat){
   
 }
 
-dat1 <- as.data.frame(dat_all_M)
-dat2 <- as.data.frame(dat_all_4)
-dat3 <- as.data.frame(dat_all_6)
-dat4 <- as.data.frame(dat_all_12)
 
-dat5 <- cbind(dat1, dat2, dat3, dat4)
-
-dat6 <- get_features(dat5)
-dat7 <- get_scores(dat6)
-
-### 
-
-### Check if dat has EIN's and year --------------------------------
-if(all(c("EIN", "year") %in% colnames(dat))){
-  temp.dat <- dat[, c("EIN", "year")]
-}else{
-  message("input data must contain a column named 'EIN' and a column named 'year'.")
-}
-
-### Format EIN's correctly 
-temp.dat$EIN <- as.character(temp.dat$EIN) 
-temp.dat$EIN  <- sprintf("%09s", temp.dat$EIN) #add leading 0's if necessary
-
-### Format year correctly 
-temp.dat$year <- as.character(temp.dat$year)
-temp.dat$year  <- sprintf("%04s", temp.dat$year) #add leading 0's if necessary
-
-
-
-### Get data from AWS ---------------------------------------------
-# years <- unique(temp.dat$year)
-
-### Part IV questions 
-# Only need P4_LINE_12, P4_LINE_28, P4_LINE_29, P4_LINE_30
-# dat_4 <-  vector(mode = "list", length = length(years))
-# #get columns I want 
-# keep_cols_part4 <- c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN", 
-#                      "F9_04_AFS_IND_X", "F9_04_AFS_CONSOL_X", #Line 12A, B
-#                      "F9_04_BIZ_TRANSAC_DTK_X", "F9_04_BIZ_TRANSAC_DTK_FAM_X", "F9_04_BIZ_TRANSAC_DTK_ENTITY_X", #line 28A, B, C
-#                      "F9_04_CONTR_NONCSH_MT_25K_X", #line 29
-#                      "F9_04_CONTR_ART_HIST_X") #Line 30
+## Testings - using 01-make-govern-data
+# dat1 <- as.data.frame(dat_all_M)
+# dat2 <- as.data.frame(dat_all_4)
+# dat3 <- as.data.frame(dat_all_6)
+# dat4 <- as.data.frame(dat_all_12)
 # 
-# for(i in 1:length(years)){
-#   link <-  paste0("https://nccs-efile.s3.us-east-1.amazonaws.com/parsed/F9-P04-T00-REQUIRED-SCHEDULES-", years[i], ".csv")
-#   temp <- fread(link, select = keep_cols_part4) 
-#   colnames(temp) <- c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN",
-#                       "P4_LINE_12A", "P4_LINE_12B",
-#                       "P4_LINE_28A", "P4_LINE_28B", "P4_LINE_28C",
-#                       "P4_LINE_29", 
-#                       "P4_LINE_30")
-#   dat_4[[i]] <- temp
-# }
+# dat5 <- cbind(dat1, dat2, dat3, dat4)
 # 
+# dat6 <- get_features(dat5)
+# dat6 <- na.omit(dat6)[1:200, ] #remove NA's and just pick a few to run the scores on
+# 
+# dat7 <- get_scores(dat6)
+

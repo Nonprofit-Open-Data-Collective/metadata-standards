@@ -341,7 +341,7 @@ for(i in 1:length(years)){
   colnames(temp) <- c("OBJECTID", "URL", "RETURN_VERSION", "ORG_EIN",
                      "P4_LINE_12A", "P4_LINE_12B",
                      "P4_LINE_28A", "P4_LINE_28B", "P4_LINE_28C",
-                     "P4_LINE_29", 
+                     "P4_LINE_29",
                      "P4_LINE_30")
   dat_4[[i]] <- temp
 }
