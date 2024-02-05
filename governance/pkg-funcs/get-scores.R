@@ -24,13 +24,6 @@
 #' \code{\link{get_features}} for formatting `feature.matrix`.
 #'
 #' @export
-get_scores <- function(feature.matrix){
-  
-  # ... (Function implementation remains unchanged)
-  
-}
-
-
 
 
 get_scores <- function(feature.matrix){
