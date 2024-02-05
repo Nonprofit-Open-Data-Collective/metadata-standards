@@ -1,6 +1,39 @@
-### Function to read in new data, and return appended scores. 
+#' Function to read in new data and return appended scores.
+#'
+#' This function takes a matrix of responses to questions for organizations and appends 6 factor scores 
+#' along with a total score to the input data.
+#'
+#' @param feature.matrix A matrix containing responses to questions for organizations. 
+#' Output from `get_features` function.
+#' Rows represent each organization, and columns represent responses to the following questions:
+#' "P12_LINE_1", "P4_LINE_12", "P4_LINE_28", "P4_LINE_29_30", "P6_LINE_1", "P6_LINE_11A", 
+#' "P6_LINE_15A", "P6_LINE_18", "P6_LINE_2", "P6_LINE_3", "P6_LINE_8A", "P6_LINE_12_13_14".
+#'
+#' @return A data frame with the original input data and appended 6 factor scores along with a total score.
+#'
+#' @details This function generates factor scores for observations in the `feature.matrix` from pre-loaded 
+#' factor model ( in `factor-objects.Rdata`) 
+#'
+#' @references
+#' Factor objects are loaded from "governance/pkg-funcs/factor-objects.Rdata".
+#'
+#' @importFrom governance.pkg.funcs factor.scores
+#'
+#' @seealso
+#' \code{\link{get_features}} for formatting `feature.matrix`.
+#'
+#' @export
+get_scores <- function(feature.matrix){
+  
+  # ... (Function implementation remains unchanged)
+  
+}
+
+
+
 
 get_scores <- function(feature.matrix){
+  ### Function to read in new data, and return appended scores. 
   
   ### Inputs
   # feature.matrix - a n*12 matrix responses to the questions for the orgs you wish to get a score for 
