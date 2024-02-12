@@ -57,8 +57,8 @@ get_scores <- function(feature.matrix){
     stop(paste("data object does not include necessary factors as columns.",which.missing,"is missing." ))
   }
   
-  # check matrix is entiryly of 0 and 1's 
-  temp.dat <- as.data.frame(sapply(feature.matrix[, col.names.correct], as.numeric))
+  # check matrix is entirely of 0 and 1's 
+  temp.dat <- as.data.frame(sapply(feature.matrix[, col.names.correct], as.integer))
   all.0.or.1 <- all(temp.dat == 0 | temp.dat == 1, na.rm = T) 
   if(!all.0.or.1){
     stop("data object must only have 0 or 1 entries for all factors")
