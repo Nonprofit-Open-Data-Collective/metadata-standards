@@ -174,7 +174,7 @@ get_features <- function(dat){
   dat_6 <-
     dat_6 %>%
     # remove divide by 0 errors
-    # only keep cases where we have more members than independent members
+    # only mutate cases where we have more members than independent members
     dplyr::mutate(divide.by.0 = P6_LINE_1A == 0 | P6_LINE_1A < P6_LINE_1B)  %>%
     #make P6_LINE_1 is percent of independent members > 0.5 
     dplyr::mutate(P6_LINE_1 = dplyr::case_when(
@@ -184,24 +184,31 @@ get_features <- function(dat){
       TRUE ~ NA
     )) %>% 
     dplyr::select(-c(P6_LINE_1B , P6_LINE_1A, divide.by.0 )) %>%
+    #need to be transformed from (1/0) and (true/false) to yes/no 
+    # P6_LINE_2, P6_LINE_3, P6_LINE_8A, P6_LINE_11A, P6_LINE_12A, P6_LINE_12B, P6_LINE_12C, P6_LINE_13, P6_LINE_14, P6_LINE_15A
+    dplyr::mutate_at(dplyr::vars( paste0("P6_LINE_", c("2", "3", "8A","11A", "12A", "12B", "12C", "13", "14", "15A"))),
+                     ~  ifelse(. == "true" | . == "1", "yes", "no")) %>% 
     #P6_LINE_2, 3, have no as good and yes as bad
     dplyr::mutate_at(dplyr::vars("P6_LINE_2", "P6_LINE_3" ) ,
               ~ ifelse(. == "no", 1, 0))%>%
     # P6_LINE_8A, 11A, 12A, 13, 14, yes is good, no is bad
-    dplyr::mutate_at(dplyr::vars( paste0("P6_LINE_", c("8A","11A", "12A", 13, 14, "15A"))),
+    dplyr::mutate_at(dplyr::vars( paste0("P6_LINE_", c("8A","11A", "12A", "13", "14", "15A"))),
               ~  ifelse(. == "yes", 1, 0)) %>% 
-    #P6_LINE_12B
-    dplyr::mutate(P6_LINE_12B = dplyr::case_when(
-      P6_LINE_12A == "no"  ~ 1,
-      P6_LINE_12A == "yes" & P6_LINE_12B == "yes" ~ 1,
-      P6_LINE_12A == "yes" & P6_LINE_12B == "no"  ~ 0
-    )) %>% 
-    #P6_LINE_12C
-    dplyr::mutate(P6_LINE_12C = dplyr::case_when(
-      P6_LINE_12A == "no"  ~ 1,
-      P6_LINE_12A == "yes" & P6_LINE_12C == "yes" ~ 1,
-      P6_LINE_12A == "yes" & P6_LINE_12C == "no"  ~ 0
-    )) %>% 
+    rowwise() %>%
+    #P6_LINE_12B #P6_LINE_12A == "yes" & P6_LINE_12B == "no" is the bad case, every other case is good
+    dplyr::mutate(P6_LINE_12B = ifelse(P6_LINE_12A == "yes" & P6_LINE_12B == "no", 0, 1)) %>%
+    # dplyr::mutate(P6_LINE_12B = dplyr::case_when(
+    #   P6_LINE_12A == "no"  ~ 1,
+    #   P6_LINE_12A == "yes" & P6_LINE_12B == "yes" ~ 1,
+    #   P6_LINE_12A == "yes" & P6_LINE_12B == "no"  ~ 0
+    # )) %>% 
+    #P6_LINE_12C #P6_LINE_12A == "yes" & P6_LINE_12C == "no" is the bad case, everything else is good
+    dplyr::mutate(P6_LINE_12C = ifelse(P6_LINE_12A == "yes" & P6_LINE_12C == "no", 0 , 1)) %>%
+    # dplyr::mutate(P6_LINE_12C = dplyr::case_when(
+    #   P6_LINE_12A == "no"  ~ 1,
+    #   P6_LINE_12A == "yes" & P6_LINE_12C == "yes" ~ 1,
+    #   P6_LINE_12A == "yes" & P6_LINE_12C == "no"  ~ 0
+    # )) %>% 
     #P6_Line_12 - 1 for A, B , and C
     dplyr::mutate(P6_LINE_12 = ifelse(P6_LINE_12A == 1 & P6_LINE_12B == 1 & P6_LINE_12C == 1, 1, 0)) %>% 
     dplyr::select(-c(P6_LINE_12A, P6_LINE_12B, P6_LINE_12C)) %>% 
