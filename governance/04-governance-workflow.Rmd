@@ -208,7 +208,7 @@ hist(scores_testing$total.score)
 
 If 1 column has entirely 1's or 0's, then the `get_scores` function will return NaN. This is because there is a matrix inversion in the solution process, which cannot be done with non full rank matrices. 
 
-### Generating Random Data for features matrix - everything here is fine
+### Generating Random Data for features matrix - bad example
 
 ```{r}
 #Random Data is fine 

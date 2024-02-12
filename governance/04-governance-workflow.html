@@ -575,9 +575,8 @@ happening.</p>
 function will return NaN. This is because there is a matrix inversion in
 the solution process, which cannot be done with non full rank
 matrices.</p>
-<div id="generating-random-data-for-features-matrix---everything-here-is-fine" class="section level3">
-<h3>Generating Random Data for features matrix - everything here is
-fine</h3>
+<div id="generating-random-data-for-features-matrix---bad-example" class="section level3">
+<h3>Generating Random Data for features matrix - bad example</h3>
 <pre class="r"><code>#Random Data is fine 
 new.dat &lt;- matrix(sample(0:1, 200*12, replace = T), ncol = 12 , nrow = 200)
 new.dat &lt;- as.data.frame(new.dat)
