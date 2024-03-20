@@ -1,0 +1,21 @@
+Variable Name,Variable Definition,Variable Description
+id,Category ID,Number used to identify the category
+name,Category name,Name of the category
+ label ,Category label,Brief label explaining the category
+description,Category Description,Longer description explaining the category
+fnd_type,"Foundation type (i.e., none, private, public, or mixed)","None: Not a foundation, trust, or grant-making organization
+Private: 501(c)(3) private foundation or a trust that the IRS treats like one
+Public: Foundation, trust, or grant-making organization that is not a 501(c)(3) private foundation nor a trust that the IRS treats like one
+Mixed: Organizations in this category are a mix of private and public foundations."
+fnd_subtype,Foundation subtype,"Foundation subtype, as determined by NTEE codes. ""Mixed"" means organizations in this category are a variety of NTEE codes."
+is_fnd_x ,"Is a foundation, trust, or grant-making organization [x]","Indicates that organizations in the category are foundations, trusts, or grant-making organizations"
+is_private_x,Private foundation [x],"Indicates that organizations in the category are 501(c)(3) private foundation or a trust that the IRS treats like them. ""Mixed"" means some organizations in this category are private foundations and some are not."
+is_public_x,Public foundation [x],"Indicates that organizations in the category are foundations, trusts, or grant-making organizations that are not 501(c)(3) private foundations nor trusts that the IRS treats like them. ""Mixed"" means some organizations in this category are public foundations and some are not."
+type_501c,"501c type (i.e., 501c3, 501not3, 4947(a)(1), or 4947(a)(2))","501c3: 501(c)(3) organizations
+501not3: 501(c) organizations other than 501(c)(3)
+4947(a)(1): 4947(a)(1) charitable trusts
+4947(a)(2): 4947(a)(2) split interest charitable trusts"
+type_501c3_x,501(c)(3) organization [x],"Indicates that organizations in this category are 501(c)(3) organizations. ""Mixed"" means some organizations in this category are 501(c)(3) organizations and some are not."
+type_501not3_x,501not3 organization [x],"Indicates that organizations in this category are 501(c) organizations other than 501(c)(3). ""Mixed"" means some organizations in this category are 501(c) organizations other than 501(c)(3) and some are not."
+deduct_income_x,Exempt from federal income tax [x],"Indicates that organizations in this category are exempt from federal income tax. ""Mixed"" means some organizations in this category are exempt and some are not."
+deduct_donations_x,Eligible to receive tax-deductible donations [x],"Indicates that organizations in this category are eligible to receive tax-deductible charitable contributions. ""Mixed"" means some organizations in this category are eligible and some are not."
