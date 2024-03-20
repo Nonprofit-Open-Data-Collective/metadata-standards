@@ -1,7 +1,7 @@
 type_501c,description,exempt_type,exempt_subtype,govt,req_990,option_990EZ,donations_deduct,political,member_restrict,supporting
 01,"501(c)(1)- Corporations originated under Act of Congress, including Federal Credit Unions",MEMBER,CORPORATION,FEDERAL,N,N,RESTRICTED,REGULAR,NA,INDEPENDENT
 02,501(c)(2)- Title holding corporation for a tax-exempt organization,MEMBER,CORPORATION,NO REQ,Y,Y,NO,LESS LIMITED,NA,SUBORDINATE
-03,"501(c)(3)- Religious, educational, charitable, scientific, and literary organizations",SOCIETAL,GENERAL,NO REQ,Y,PF_N,UNLIMITED,REGULAR,N,INDEPENDENT
+03,"501(c)(3)- Religious, educational, charitable, scientific, and literary organizations",SOCIETAL,GENERAL,NO REQ,Y,Y_EXCEPT,UNLIMITED,REGULAR,N,INDEPENDENT
 04,"501(c)(4) - Civic Leagues, Social Welfare Organizations, and Local Associations of Employees",SOCIETAL,GENERAL,NO REQ,Y,Y,NO,LESS LIMITED,N,INDEPENDENT
 05,"501(c)(5) - Labor, Agricultural and Horticultural Organizations",MEMBER,SPECIAL INT GRP,NO REQ,Y,Y,NO,LESS LIMITED,Y,INDEPENDENT
 06,"501(c)(6)- Business leagues, chambers of commerce, real estate boards, etc. formed to improve conditions",SOCIETAL,GENERAL,NO REQ,Y,Y,NO,LESS LIMITED,N,INDEPENDENT
