@@ -1,10 +1,10 @@
 type_501c,description,exempt_type,exempt_subtype,govt,req_990,option_990EZ,donations_deduct,political,member_restrict,supporting
 01,"501(c)(1)- Corporations originated under Act of Congress, including Federal Credit Unions",MEMBER,CORPORATION,FEDERAL,N,N,RESTRICTED,REGULAR,NA,INDEPENDENT
-02,501(c)(2)- Title holding corporation for a tax-exempt organization,MEMBER,CORPORATION,NO REQ,Y,Y,NO,LIMITED,NA,SUBORDINATE
+02,501(c)(2)- Title holding corporation for a tax-exempt organization,MEMBER,CORPORATION,NO REQ,Y,Y,NO,LESS LIMITED,NA,SUBORDINATE
 03,"501(c)(3)- Religious, educational, charitable, scientific, and literary organizations",SOCIETAL,GENERAL,NO REQ,Y,PF_N,UNLIMITED,REGULAR,N,INDEPENDENT
-04,"501(c)(4) - Civic Leagues, Social Welfare Organizations, and Local Associations of Employees",SOCIETAL,GENERAL,NO REQ,Y,Y,NO,LIMITED,N,INDEPENDENT
-05,"501(c)(5) - Labor, Agricultural and Horticultural Organizations",MEMBER,SPECIAL INT GRP,NO REQ,Y,Y,NO,LIMITED,Y,INDEPENDENT
-06,"501(c)(6)- Business leagues, chambers of commerce, real estate boards, etc. formed to improve conditions",SOCIETAL,GENERAL,NO REQ,Y,Y,NO,LIMITED,N,INDEPENDENT
+04,"501(c)(4) - Civic Leagues, Social Welfare Organizations, and Local Associations of Employees",SOCIETAL,GENERAL,NO REQ,Y,Y,NO,LESS LIMITED,N,INDEPENDENT
+05,"501(c)(5) - Labor, Agricultural and Horticultural Organizations",MEMBER,SPECIAL INT GRP,NO REQ,Y,Y,NO,LESS LIMITED,Y,INDEPENDENT
+06,"501(c)(6)- Business leagues, chambers of commerce, real estate boards, etc. formed to improve conditions",SOCIETAL,GENERAL,NO REQ,Y,Y,NO,LESS LIMITED,N,INDEPENDENT
 07,"501(c)(7)- Social and recreational clubs which provide pleasure, recreation, and social activities.",SOCIETAL,MEMBERSHIP,NO REQ,Y,Y,NO,REGULAR,N,INDEPENDENT
 08,"501(c)(8)- Fraternal beneficiary societies and associations, with lodges providing for payment of life...",MEMBER,SPECIAL INT GRP,NO REQ,Y,Y,RESTRICTED,REGULAR,N,LODGE
 09,501(c)(9)- Voluntary employees' beneficiary ass'ns (including fed. employees' voluntary beneficiary...,MEMBER,INSURANCE,NO REQ,Y,Y,NO,REGULAR,N,INDEPENDENT
@@ -21,7 +21,7 @@ type_501c,description,exempt_type,exempt_subtype,govt,req_990,option_990EZ,donat
 20,"501(c)(20) - Trusts for prepaid group legal services, as part of a qual. group legal service plan or plans.",MEMBER,DEFUNCT,NO REQ,,,NA,REGULAR,NA,INDEPENDENT
 21,"501(c)(21) - Black lung trusts, satisfying claims for compensation under Black Lung Acts.",MEMBER,INSURANCE,NO REQ,Y,N,NO,REGULAR,N,INDEPENDENT
 22,501(c)(22)  - Multiemployer Pension Plan,MEMBER,PENSION,NO REQ,Y,Y,NO,REGULAR,NA,
-23,501(c)(23) - Veterans association formed prior to 1880,MEMBER,SPECIAL INT GRP,NO REQ,Y,Y,NO,LIMITED,Y,INDEPENDENT
+23,501(c)(23) - Veterans association formed prior to 1880,MEMBER,SPECIAL INT GRP,NO REQ,Y,Y,NO,LESS LIMITED,Y,INDEPENDENT
 24,501(c)(24)  -Trust described in Section 4049 of ERISA,MEMBER,DEFUNCT,NO REQ,,,NO,REGULAR,NA,INDEPENDENT
 25,"501(c)(25) - Title Holding Company for Pensions, etc",MEMBER,CORPORATION,NO REQ,Y,Y,NO,REGULAR,NA,SUBORDINATE
 26,2501(c)(26) - State-Sponsored High Risk Health Insurance Organizations,MEMBER,INSURANCE,STATE,Y,Y,NO,REGULAR,NA,INDEPENDENT
