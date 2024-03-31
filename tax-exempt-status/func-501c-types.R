@@ -73,7 +73,7 @@ required_990 <- c("N",  "Y",  "YE",  "Y",  "Y",  "Y",  "Y",  "Y",  "Y",  "Y",
 
 option_990EZ <-  c("NA", "Y", "YU", "M", "Y", "Y", "Y", "YR", "NO", "YR", "NO", "NO", "YU", "NO",
                  "NO", "NO", "NO", "NO", "NO", "NA", "NO", "NO", "Y", "NA", "NO", "NO", "NO",
-                 "NO", "NO", "1065", "NA", "YU", "YU", "YU", "NO", "NA", "NO")
+                 "NO", "NO", "NA", "NA", "YU", "YU", "YU", "NO", "NA", "NO")
 
 
 
@@ -87,9 +87,10 @@ membership_restrictions <- c("N", "Y", "N", "N", "N", "N", "N", "L", "N", "N", "
                              "N", "N", "N", "N", "N", "Y", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N",
                              "N", "N", "NA", "N", "N")
 
-existence_501c <- c("NA", "NA", "N", "N", "N", "N", "N", "L", "N", "N", "N", "N", "N", "N", "N", "N",
-                    "N", "N", "N", "NA", "N", "N", "NA", "N", "NA", "NA", "N", "N", "NA", "NA", "Y",
-                    "N", "N", "N", "NA", "NA", "NA")
+supporting <- c("I", "H" , "I", "I" , "I", "I" , "I", "L" , "I", "L" , 
+                "I", "I" , "I", "I" , "I", "P" , "I", "I" , "I", "I" , "I", 
+                "Unknown", "I" , "I", "H" , "I", "I" , "I", "I" , "I", "P" , 
+                "P", "I" , "P", "I" , "I", "I" )
 
 other_filing_requirements <- c("NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA",
                                "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NO", "NA", "NA", "NA", "NA", "NA",
@@ -99,6 +100,11 @@ donations_deductible <- c("NA", "YR", "RES", "NO", "NO", "NO", "RES", "RES", "RE
                           "RES", "RES", "RES", "RES", "RES", "RES", "RES", "NA", "NO", "RES", "NO", "RES",
                           "NA", "RES", "RES", "RES", "RES", "Y", "NA", "YU", "YU", "YU", "NO", "NA", "NO")
 
+donations_deductible <- c("YE", "NO", "YU", "NO",  "NO", "NO", "NO", "YE",  "NO",
+                          "YE", "NO", "NO",  "YU", "NO", "NO", "NO",  "NO", "NO",
+                          "YU", "NA",  "NO", "NO", "NO", "NO",  "NO", "NO", "NO", 
+                          "NO",  "NO", "NO", "YU", "YU",  "YU", "YU", "NO", "NO", 
+                          "NO") 
 
 ### Make the data frame
 
@@ -106,11 +112,11 @@ types <- data.frame(
   code = code_opts, 
   description, tax_exempt_group, tax_exempt_subgroup, govt_established, 
   required_990, option_990EZ, political_activity, membership_restrictions,
-  existence_501c, other_filing_requirements, donations_deductible)
+  supporting, other_filing_requirements, donations_deductible)
 
 
 ### Make the Function to input 501c types and output list of information about it.
-get_tax_exempt_type <- function(code){
+get_tax_exempt_type <- function(code, suppress.messages = TRUE){
   
   ### Inputs
   # code = foundation code from 990 bmf. should be 2 digits. 
@@ -131,7 +137,7 @@ get_tax_exempt_type <- function(code){
   
   ## test the code is correct - if not, return NAs
   if(!(code %in% types$code)){
-    message("Input foundation code is not vaild. NAs will be returned")
+    if(!suppress.messages){message("Input foundation code is not vaild. NAs will be returned")}
     df.bad <- data.frame(matrix(NA, ncol = ncol(types), nrow = 1))
     colnames(df.bad) <- colnames(types)
     df.bad$code <- code
@@ -146,22 +152,22 @@ get_tax_exempt_type <- function(code){
 
 
 ### Examples
-
-#Get one code
-get_tax_exempt_type("5")
-get_tax_exempt_type("16")
-get_tax_exempt_type("81")
-get_tax_exempt_type("82")
-
-
-#get multiple codes 
-fake_data <- data.frame(
-  codes = c("01", "51", "22", "08", "10")
-)
-
-library(dplyr)
-library(tidyr)
-fake_data %>%
-  mutate(new_columns = map(codes, get_tax_exempt_type)) %>% 
-  unnest(new_columns) 
-
+# 
+# #Get one code
+# get_tax_exempt_type("5")
+# get_tax_exempt_type("16")
+# get_tax_exempt_type("81")
+# get_tax_exempt_type("82")
+# 
+# 
+# #get multiple codes 
+# fake_data <- data.frame(
+#   codes = c("01", "51", "22", "08", "10")
+# )
+# 
+# library(dplyr)
+# library(tidyr)
+# fake_data %>%
+#   mutate(new_columns = map(codes, get_tax_exempt_type)) %>% 
+#   unnest(new_columns) 
+# 
