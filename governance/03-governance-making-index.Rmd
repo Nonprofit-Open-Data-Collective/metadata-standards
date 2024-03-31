@@ -193,7 +193,7 @@ model2.6$PVAL
 
 ```
 
-## Adding Factor Scores to Design Matrix 
+## Adding Factor Scores to Design Matrix
 
 ```{r}
 
@@ -218,7 +218,7 @@ ggcorrplot(scores$r.scores,
 
 ```
 
-### Exploring Results 
+### Exploring Results
 
 ```{r}
 all.dat %>% 
@@ -304,15 +304,15 @@ all.dat %>%
 
 ```
 
-## Showing How Scores are Calculated 
+## Showing How Scores are Calculated
 
-There are 12 variables, 6 factors, and n$\approx$ 64k observations. Let, 
+There are 12 variables, 6 factors, and n$\approx$ 64k observations. Let,
 
 -   $D$ = the Design matrix $\in \mathbb{R}^{n x 12}$
 
 -   $D_s$ = Design matrix with columns centered at 0 and scaled to have 1 sd $\in \mathbb{R}^{n x 12}$
 
--   $C$ = observed correlation matrix $\in \mathbb{R}^{12 x 12}$. In our example, this is the polychoric correlation. 
+-   $C$ = observed correlation matrix $\in \mathbb{R}^{12 x 12}$. In our example, this is the polychoric correlation.
 
 -   $L$ = factor loading matrix $\in \mathbb{R}^{12 x 6}$
 
@@ -320,8 +320,7 @@ There are 12 variables, 6 factors, and n$\approx$ 64k observations. Let,
 
 -   $S = D_s W$ = matrix of scores $\in \mathbb{R}^{n x 6}$
 
-
-Thus if $D_s^*$ is a new (scaled) design matrix using the same scaling mean and sd as $D_S$, then $S^* = D_s^* W$ is the matrix of new scores. 
+Thus if $D_s^*$ is a new (scaled) design matrix using the same scaling mean and sd as $D_S$, then $S^* = D_s^* W$ is the matrix of new scores.
 
 ```{r}
 data.scaled <- scale(features2)
@@ -364,8 +363,7 @@ hist(rowSums(new.scores$scores))
 
 ```
 
-
-## Exploring Distributions of Scores 
+## Exploring Distributions of Scores
 
 ```{r}
 #grabbing other "demographic" information about the orgs 
@@ -395,7 +393,7 @@ dat.2018 <-
 
 ```
 
-### Geographic 
+### Geographic
 
 ```{r}
 ### By State
@@ -434,8 +432,6 @@ counties_sf %>%
 
 
 ```
-
-
 
 ### NTEE
 
@@ -479,6 +475,3 @@ dat.2018 %>%
 
 
 ```
-
-
-
