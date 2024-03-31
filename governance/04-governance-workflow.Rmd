@@ -216,7 +216,7 @@ new.dat <- matrix(sample(0:1, 200*12, replace = T), ncol = 12 , nrow = 200)
 new.dat <- as.data.frame(new.dat)
 colnames(new.dat) <- colnames(features_testing[, -1])
 
-new.dat$P4_LINE_29_30 <- 0
+# new.dat$P4_LINE_29_30 <- 1
 
 new.scores <- get_scores(new.dat)
 head(new.scores)
