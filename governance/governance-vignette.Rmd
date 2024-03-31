@@ -328,19 +328,17 @@ communal "yes/no" response (or other if appropriate) according to the
 
 #### Part IV
 
-+-------------------+-------------------+-------------------+
-| Line              | Variable          | Levels            |
-+===================+===================+===================+
-| Line 12A, 12B,    | P4_LINE_12A, ..., | -   "yes" - the   |
-| 28A, 28B, 28C,    | P4_LINE_30        |     answer to     |
-| 29, 30            |                   |     this line is  |
-|                   |                   |     yes           |
-|                   |                   |                   |
-|                   |                   | -   "no" - the    |
-|                   |                   |     answer to     |
-|                   |                   |     this line is  |
-|                   |                   |     no            |
-+-------------------+-------------------+-------------------+
++----------------------+----------------------+----------------------+
+| Line                 | Variable             | Levels               |
++======================+======================+======================+
+| Line 12A, 12B, 28A,  | P4_LINE_12A, ...,    | -   "yes" - the      |
+| 28B, 28C, 29, 30     | P4_LINE_30           |     answer to this   |
+|                      |                      |     line is yes      |
+|                      |                      |                      |
+|                      |                      | -   "no" - the       |
+|                      |                      |     answer to this   |
+|                      |                      |     line is no       |
++----------------------+----------------------+----------------------+
 
 ```{r}
 #remove any unwanted years that may have accidentally appeared
@@ -362,64 +360,58 @@ dat_all_4 <-
 
 ## Part VI
 
-+-------------------+-------------------+-------------------+
-| Line Number       | Variable Name     | Levels            |
-+===================+===================+===================+
-| Line 1A, 1B       | P6_LINE_1A,       | integer value     |
-|                   | P6_LINE_1B        |                   |
-+-------------------+-------------------+-------------------+
-| Line 2, 3, 4, 5,  | P6_LINE_2, .... , | -   "yes" - the   |
-| 6, 7A, 7B, 8A,    | P6_LINE_16B       |     answer to     |
-| 8B, 10A, 10B,     |                   |     this line is  |
-| 11A, 12A, 12B,    |                   |     yes           |
-| 12C, 13, 14, 15A, |                   |                   |
-| 15B, 16A, 16B     |                   | -   "no" - the    |
-|                   |                   |     answer to     |
-|                   |                   |     this line is  |
-|                   |                   |     no            |
-+-------------------+-------------------+-------------------+
-| Line 18           | P6_LINE_18        | -                 |
-|                   |                   |   "own_website" - |
-|                   |                   |     the own       |
-|                   |                   |     website box   |
-|                   |                   |     on line 18 is |
-|                   |                   |     checked       |
-|                   |                   |                   |
-|                   |                   | -   "             |
-|                   |                   | others_website" - |
-|                   |                   |     the another's |
-|                   |                   |     website box   |
-|                   |                   |     on line 18 is |
-|                   |                   |     checked       |
-|                   |                   |                   |
-|                   |                   | -   "request" -   |
-|                   |                   |     the upon      |
-|                   |                   |     request       |
-|                   |                   |     website box   |
-|                   |                   |     on line 18 is |
-|                   |                   |     checked       |
-|                   |                   |                   |
-|                   |                   | -   "other" - the |
-|                   |                   |     other box on  |
-|                   |                   |     line 18 is    |
-|                   |                   |     checked       |
-+-------------------+-------------------+-------------------+
-| Line 1 Schedule O | P6_SCHEDULE_O     | -   "X" - there   |
-|                   |                   |     is a Schedule |
-|                   |                   |     O attached to |
-|                   |                   |     this return   |
-|                   |                   |     with notes    |
-|                   |                   |     from Part VI  |
-|                   |                   |     Line 1        |
-|                   |                   |                   |
-|                   |                   | -   NA - there is |
-|                   |                   |     no Schedule O |
-|                   |                   |     attached to   |
-|                   |                   |     this return   |
-|                   |                   |     with notes    |
-|                   |                   |     from Part VI  |
-|                   |                   |     Line 1        |
-+-------------------+-------------------+-------------------+
++----------------------+----------------------+----------------------+
+| Line Number          | Variable Name        | Levels               |
++======================+======================+======================+
+| Line 1A, 1B          | P6_LINE_1A,          | integer value        |
+|                      | P6_LINE_1B           |                      |
++----------------------+----------------------+----------------------+
+| Line 2, 3, 4, 5, 6,  | P6_LINE_2, .... ,    | -   "yes" - the      |
+| 7A, 7B, 8A, 8B, 10A, | P6_LINE_16B          |     answer to this   |
+| 10B, 11A, 12A, 12B,  |                      |     line is yes      |
+| 12C, 13, 14, 15A,    |                      |                      |
+| 15B, 16A, 16B        |                      | -   "no" - the       |
+|                      |                      |     answer to this   |
+|                      |                      |     line is no       |
++----------------------+----------------------+----------------------+
+| Line 18              | P6_LINE_18           | -   "own_website" -  |
+|                      |                      |     the own website  |
+|                      |                      |     box on line 18   |
+|                      |                      |     is checked       |
+|                      |                      |                      |
+|                      |                      | -   "                |
+|                      |                      |                      |
+|                      |                      |    others_website" - |
+|                      |                      |     the another's    |
+|                      |                      |     website box on   |
+|                      |                      |     line 18 is       |
+|                      |                      |     checked          |
+|                      |                      |                      |
+|                      |                      | -   "request" - the  |
+|                      |                      |     upon request     |
+|                      |                      |     website box on   |
+|                      |                      |     line 18 is       |
+|                      |                      |     checked          |
+|                      |                      |                      |
+|                      |                      | -   "other" - the    |
+|                      |                      |     other box on     |
+|                      |                      |     line 18 is       |
+|                      |                      |     checked          |
++----------------------+----------------------+----------------------+
+| Line 1 Schedule O    | P6_SCHEDULE_O        | -   "X" - there is a |
+|                      |                      |     Schedule O       |
+|                      |                      |     attached to this |
+|                      |                      |     return with      |
+|                      |                      |     notes from Part  |
+|                      |                      |     VI Line 1        |
+|                      |                      |                      |
+|                      |                      | -   NA - there is no |
+|                      |                      |     Schedule O       |
+|                      |                      |     attached to this |
+|                      |                      |     return with      |
+|                      |                      |     notes from Part  |
+|                      |                      |     VI Line 1        |
++----------------------+----------------------+----------------------+
 
 ```{r}
 #remove any unwanted years that may have accidentally appeared
@@ -451,130 +443,109 @@ dat_all_6 <-
 
 ### Part XII
 
-+------------------+------------------+------------------+
-| Line Number      | Variable Name    | Levels           |
-+==================+==================+==================+
-| Line 1           | P12_LINE_1       | -   "cash" -     |
-|                  |                  |     cash         |
-|                  |                  |     accounting   |
-|                  |                  |     method       |
-|                  |                  |                  |
-|                  |                  | -   "accrual" -  |
-|                  |                  |     accrual      |
-|                  |                  |     accounting   |
-|                  |                  |     method       |
-|                  |                  |                  |
-|                  |                  | -   "other" -    |
-|                  |                  |     other        |
-|                  |                  |     accounting   |
-|                  |                  |     method       |
-+------------------+------------------+------------------+
-| Line 1           | P12_L I N        | If P12_LINE_1 is |
-|                  | E                | "other", then    |
-|                  | _1_OTHER_EXPLAIN | this is what is  |
-|                  |                  | written for      |
-|                  |                  | other            |
-+------------------+------------------+------------------+
-| Line 2a          | P12_LINE_2A      | -   "no" -       |
-|                  |                  |     answer to    |
-|                  |                  |     question 2a  |
-|                  |                  |     is no        |
-|                  |                  |                  |
-|                  |                  | -   "separate" - |
-|                  |                  |     answer to    |
-|                  |                  |     question 2a  |
-|                  |                  |     is yes and   |
-|                  |                  |     the box for  |
-|                  |                  |     "separate    |
-|                  |                  |     basis" is    |
-|                  |                  |     checked      |
-|                  |                  |                  |
-|                  |                  | -   "colsol" -   |
-|                  |                  |     answer to    |
-|                  |                  |     question 2a  |
-|                  |                  |     is yes and   |
-|                  |                  |     the box for  |
-|                  |                  |                  |
-|                  |                  |    "consolidated |
-|                  |                  |     basis" is    |
-|                  |                  |     checked      |
-|                  |                  |                  |
-|                  |                  | -   "both" -     |
-|                  |                  |     answer to    |
-|                  |                  |     question 2a  |
-|                  |                  |     is yes and   |
-|                  |                  |     the box for  |
-|                  |                  |     "both        |
-|                  |                  |     consolidated |
-|                  |                  |     and separate |
-|                  |                  |     basis" is    |
-|                  |                  |     checked      |
-+------------------+------------------+------------------+
-| Line 2b          | P12_LINE_2B      | -   "no" -       |
-|                  |                  |     answer to    |
-| Notes: Something |                  |     question 2a  |
-| is wrong about   |                  |     is no        |
-| this coding.     |                  |                  |
-| There are many F |                  | -   "separate" - |
-| 9 \_ 1           |                  |     answer to    |
-| 2                |                  |     question 2b  |
-| _FINSTAT_AUDIT_X |                  |     is yes and   |
-| == FALSE, But    |                  |     the box for  |
-| F9_12_FIN S T A  |                  |     "separate    |
-| T                |                  |     basis" is    |
-| _AUDIT_CONSOL_X, |                  |     checked      |
-| F9_12\_ F I N    |                  |                  |
-| S                |                  | -   "colsol" -   |
-| TAT_AUDIT_SEP_X, |                  |     answer to    |
-| or F9_12\_ F I N |                  |     question 2b  |
-| S                |                  |     is yes and   |
-| TAT_AUDIT_BOTH_X |                  |     the box for  |
-| is checked       |                  |                  |
-|                  |                  |    "consolidated |
-|                  |                  |     basis" is    |
-|                  |                  |     checked      |
-|                  |                  |                  |
-|                  |                  | -   "both" -     |
-|                  |                  |     answer to    |
-|                  |                  |     question 2b  |
-|                  |                  |     is yes and   |
-|                  |                  |     the box for  |
-|                  |                  |     "both        |
-|                  |                  |     consolidated |
-|                  |                  |     and separate |
-|                  |                  |     basis" is    |
-|                  |                  |     checked      |
-+------------------+------------------+------------------+
-| Line 2C          | P12_LINE_2C      | -   "no" -       |
-|                  |                  |     answer to    |
-|                  |                  |     question 2c  |
-|                  |                  |     is no        |
-|                  |                  |                  |
-|                  |                  | -   "yes" -      |
-|                  |                  |     answer to    |
-|                  |                  |     question 2c  |
-|                  |                  |     is no        |
-+------------------+------------------+------------------+
-| Line 3A          | P12_LINE_3A      | -   "no" -       |
-|                  |                  |     answer to    |
-|                  |                  |     question 3a  |
-|                  |                  |     is no        |
-|                  |                  |                  |
-|                  |                  | -   "yes" -      |
-|                  |                  |     answer to    |
-|                  |                  |     question 3a  |
-|                  |                  |     is no        |
-+------------------+------------------+------------------+
-| Line 3B          | P12_LINE_3B      | -   "no" -       |
-|                  |                  |     answer to    |
-|                  |                  |     question 3b  |
-|                  |                  |     is no        |
-|                  |                  |                  |
-|                  |                  | -   "yes" -      |
-|                  |                  |     answer to    |
-|                  |                  |     question 3b  |
-|                  |                  |     is no        |
-+------------------+------------------+------------------+
++----------------------+----------------------+----------------------+
+| Line Number          | Variable Name        | Levels               |
++======================+======================+======================+
+| Line 1               | P12_LINE_1           | -   "cash" - cash    |
+|                      |                      |     accounting       |
+|                      |                      |     method           |
+|                      |                      |                      |
+|                      |                      | -   "accrual" -      |
+|                      |                      |     accrual          |
+|                      |                      |     accounting       |
+|                      |                      |     method           |
+|                      |                      |                      |
+|                      |                      | -   "other" - other  |
+|                      |                      |     accounting       |
+|                      |                      |     method           |
++----------------------+----------------------+----------------------+
+| Line 1               | P12_L I N E          | If P12_LINE_1 is     |
+|                      | \_1_OTHER_EXPLAIN    | "other", then this   |
+|                      |                      | is what is written   |
+|                      |                      | for other            |
++----------------------+----------------------+----------------------+
+| Line 2a              | P12_LINE_2A          | -   "no" - answer to |
+|                      |                      |     question 2a is   |
+|                      |                      |     no               |
+|                      |                      |                      |
+|                      |                      | -   "separate" -     |
+|                      |                      |     answer to        |
+|                      |                      |     question 2a is   |
+|                      |                      |     yes and the box  |
+|                      |                      |     for "separate    |
+|                      |                      |     basis" is        |
+|                      |                      |     checked          |
+|                      |                      |                      |
+|                      |                      | -   "colsol" -       |
+|                      |                      |     answer to        |
+|                      |                      |     question 2a is   |
+|                      |                      |     yes and the box  |
+|                      |                      |     for              |
+|                      |                      |                      |
+|                      |                      | "consolidated basis" |
+|                      |                      | is checked           |
+|                      |                      |                      |
+|                      |                      | -   "both" - answer  |
+|                      |                      |     to question 2a   |
+|                      |                      |     is yes and the   |
+|                      |                      |     box for "both    |
+|                      |                      |     consolidated and |
+|                      |                      |     separate basis"  |
+|                      |                      |     is checked       |
++----------------------+----------------------+----------------------+
+| Line 2b              | P12_LINE_2B          | -   "no" - answer to |
+|                      |                      |     question 2a is   |
+| Notes: Something is  |                      |     no               |
+| wrong about this     |                      |                      |
+| coding. There are    |                      | -   "separate" -     |
+| many F 9 \_ 1 2      |                      |     answer to        |
+| \_FINSTAT_AUDIT_X == |                      |     question 2b is   |
+| FALSE, But F9_12_FIN |                      |     yes and the box  |
+| S T A T              |                      |     for "separate    |
+| \_AUDIT_CONSOL_X,    |                      |     basis" is        |
+| F9_12\_ F I N S      |                      |     checked          |
+| TAT_AUDIT_SEP_X, or  |                      |                      |
+| F9_12\_ F I N S      |                      | -   "colsol" -       |
+| TAT_AUDIT_BOTH_X is  |                      |     answer to        |
+| checked              |                      |     question 2b is   |
+|                      |                      |     yes and the box  |
+|                      |                      |     for              |
+|                      |                      |                      |
+|                      |                      | "consolidated basis" |
+|                      |                      | is checked           |
+|                      |                      |                      |
+|                      |                      | -   "both" - answer  |
+|                      |                      |     to question 2b   |
+|                      |                      |     is yes and the   |
+|                      |                      |     box for "both    |
+|                      |                      |     consolidated and |
+|                      |                      |     separate basis"  |
+|                      |                      |     is checked       |
++----------------------+----------------------+----------------------+
+| Line 2C              | P12_LINE_2C          | -   "no" - answer to |
+|                      |                      |     question 2c is   |
+|                      |                      |     no               |
+|                      |                      |                      |
+|                      |                      | -   "yes" - answer   |
+|                      |                      |     to question 2c   |
+|                      |                      |     is no            |
++----------------------+----------------------+----------------------+
+| Line 3A              | P12_LINE_3A          | -   "no" - answer to |
+|                      |                      |     question 3a is   |
+|                      |                      |     no               |
+|                      |                      |                      |
+|                      |                      | -   "yes" - answer   |
+|                      |                      |     to question 3a   |
+|                      |                      |     is no            |
++----------------------+----------------------+----------------------+
+| Line 3B              | P12_LINE_3B          | -   "no" - answer to |
+|                      |                      |     question 3b is   |
+|                      |                      |     no               |
+|                      |                      |                      |
+|                      |                      | -   "yes" - answer   |
+|                      |                      |     to question 3b   |
+|                      |                      |     is no            |
++----------------------+----------------------+----------------------+
 
 ```{r}
 #remove any unwanted years that may have accidentally appeared
@@ -643,19 +614,13 @@ dat_all_12 <-
 
 ### Schedule M
 
-+-------------------+-------------------+-------------------+
-| Line              | Variable          | Levels            |
-+===================+===================+===================+
-| Line 31           | PM_LINE_31        | -   "yes" - the   |
-|                   |                   |     answer to     |
-|                   |                   |     this line is  |
-|                   |                   |     yes           |
-|                   |                   |                   |
-|                   |                   | -   "no" - the    |
-|                   |                   |     answer to     |
-|                   |                   |     this line is  |
-|                   |                   |     no            |
-+-------------------+-------------------+-------------------+
++---------+------------+--------------------------------------------+
+| Line    | Variable   | Levels                                     |
++=========+============+============================================+
+| Line 31 | PM_LINE_31 | -   "yes" - the answer to this line is yes |
+|         |            |                                            |
+|         |            | -   "no" - the answer to this line is no   |
++---------+------------+--------------------------------------------+
 
 ```{r}
 #remove any unwanted years that may have accidentally appeared
@@ -707,102 +672,113 @@ practices. i.e.
 
 -   0 is negative direction (i.e. bad governance practices)
 
-+---------------+-----------------+--------------------------------+
-| Variable      | Original Coding | Design Matrix Coding           |
-| Name(s)       |                 |                                |
-+===============+=================+================================+
-| P4_LINE_12A   | yes/no          | 1 - yes to either 12A or 12B   |
-|               |                 |                                |
-| P4_LINE_12B   | yes/no          | 0 - no to both                 |
-+---------------+-----------------+--------------------------------+
-| P4_Line_28A,  | yes/no          | 0 - no to all                  |
-| B, C          |                 |                                |
-|               | yes/no          | 1 - yes to any of 28A, 28B, or |
-|               |                 | 28C                            |
-|               | yes/no          |                                |
-+---------------+-----------------+--------------------------------+
-| P4_Line_29    | yes/no          | 1 - (29 no) or (30 no) or (29  |
-|               |                 | yes and PM 31 yes) or (30 yes  |
-| P4_Line_30    | yes/no          | and PM 31 yes)                 |
-|               |                 |                                |
-| PM_LINE_31    | yes/no/na       | 0 - (29 yes and PM 31 no) or   |
-|               |                 | (30 yes and PM 31 no)          |
-+---------------+-----------------+--------------------------------+
-| P6_LINE_1A,   | numeric         | is P6_LINE_1B / P6_LINE_1A \>= |
-| P6_LINE_1B    |                 | 0.5 \|                         |
-|               |                 |                                |
-|               |                 | i.e. is the proportion of      |
-|               |                 | independent members at least   |
-|               |                 | 0.5? \|                        |
-+---------------+-----------------+--------------------------------+
-| P6_LINE_2     | yes/no          | 0/1 (no is good)               |
-+---------------+-----------------+--------------------------------+
-| P6_LINE_3     | yes/no          | 0/1 (no is good)               |
-+---------------+-----------------+--------------------------------+
-| P6_LINE_4     | yes/no          | removed, neither yes or no is  |
-|               |                 | not good nor bad               |
-+---------------+-----------------+--------------------------------+
-| P6_Line_5     | yes/no          | 0/1 (no is good)               |
-+---------------+-----------------+--------------------------------+
-| P6_Line_6     | yes/no          | removed. neither is good or    |
-|               |                 | bad. only answers to           |
-|               |                 | P6_Line_7A/B matter            |
-+---------------+-----------------+--------------------------------+
-| P6_LINE_7A    | yes/no          | 0/1 (no is good)               |
-+---------------+-----------------+--------------------------------+
-| P6_Line_7B    | yes/no          | 0/1 (no is good)               |
-+---------------+-----------------+--------------------------------+
-| P6_LINE_10A   | yes/no          | 1 - (10A no) or (10A yes + 10B |
-|               |                 | yes)                           |
-| P6_LINE_10B   | yes/no/NA       |                                |
-|               |                 | 0 - (10A yes + 10B no)         |
-+---------------+-----------------+--------------------------------+
-| P6_LINE_12B   | yes/no/NA       | 1 - (12A yes + 12B yes) or     |
-|               |                 | (12A no)                       |
-|               |                 |                                |
-|               |                 | 0 - (12 A yes + 12B no)        |
-+---------------+-----------------+--------------------------------+
-| P6_LINE_12C   | yes/no/NA       | 1 - (12A yes + 12C yes) or     |
-|               |                 | (12A no)                       |
-|               |                 |                                |
-|               |                 | 0 - (12 A yes + 12C no)        |
-+---------------+-----------------+--------------------------------+
-| P6_LINE_16A   | yes/no          | 1 - (16A no) or (16A yes + 16B |
-|               |                 | yes)                           |
-| P6_LINE_16B   | yes/no/NA       |                                |
-|               |                 | 0 - (16A yes + 16B no)         |
-+---------------+-----------------+--------------------------------+
-| P6_LINE_18    | request/own     | 1 - own website                |
-|               | we              |                                |
-|               | bsite/another's | 0 - anything else              |
-|               | website/other   |                                |
-+---------------+-----------------+--------------------------------+
-| All other     | yes/no          | 1/0                            |
-| P6\_\*        |                 |                                |
-+---------------+-----------------+--------------------------------+
-| P12_LINE_1    | Accrual/cash    | 1 - Accrual                    |
-|               |                 |                                |
-|               |                 | 0 - anything else              |
-+---------------+-----------------+--------------------------------+
-| P12_LINE_2A   | both/c          | 0 - no                         |
-|               | on              |                                |
-|               | sol/no/seperate | 1 - anything else              |
-+---------------+-----------------+--------------------------------+
-| P12_LINE_2B   | both/c          | 0 - no                         |
-|               | on              |                                |
-|               | sol/no/seperate | 1 - anything else              |
-+---------------+-----------------+--------------------------------+
-| P12_LINE_2C   | yes/no/NA       | 1 -( 2B yes + 2C yes ) or (2A  |
-|               |                 | yes + 2C yes) or (2a no ) or   |
-|               |                 | (2b no)                        |
-|               |                 |                                |
-|               |                 | 0- (2a yes and 2c no) or (2b   |
-|               |                 | yes and 2c no)                 |
-+---------------+-----------------+--------------------------------+
-| P12_LINE_3A/  | yes/no          | 1 - (3a no) + (3a yes +3b yes) |
-|               |                 |                                |
-| P12_LINE_3B   | yes/no          | 0 - (3a yes + 3b no)           |
-+---------------+-----------------+--------------------------------+
++----------------------+----------------------+----------------------+
+| Variable Name(s)     | Original Coding      | Design Matrix Coding |
++======================+======================+======================+
+| P4_LINE_12A          | yes/no               | 1 - yes to either    |
+|                      |                      | 12A or 12B           |
+| P4_LINE_12B          | yes/no               |                      |
+|                      |                      | 0 - no to both       |
++----------------------+----------------------+----------------------+
+| P4_Line_28A, B, C    | yes/no               | 0 - no to all        |
+|                      |                      |                      |
+|                      | yes/no               | 1 - yes to any of    |
+|                      |                      | 28A, 28B, or 28C     |
+|                      | yes/no               |                      |
++----------------------+----------------------+----------------------+
+| P4_Line_29           | yes/no               | 1 - (29 no) or (30   |
+|                      |                      | no) or (29 yes and   |
+| P4_Line_30           | yes/no               | PM 31 yes) or (30    |
+|                      |                      | yes and PM 31 yes)   |
+| PM_LINE_31           | yes/no/na            |                      |
+|                      |                      | 0 - (29 yes and PM   |
+|                      |                      | 31 no) or (30 yes    |
+|                      |                      | and PM 31 no)        |
++----------------------+----------------------+----------------------+
+| P6_LINE_1A,          | numeric              | is P6_LINE_1B /      |
+| P6_LINE_1B           |                      | P6_LINE_1A \>= 0.5   |
+|                      |                      | \|                   |
+|                      |                      |                      |
+|                      |                      | i.e. is the          |
+|                      |                      | proportion of        |
+|                      |                      | independent members  |
+|                      |                      | at least 0.5? \|     |
++----------------------+----------------------+----------------------+
+| P6_LINE_2            | yes/no               | 0/1 (no is good)     |
++----------------------+----------------------+----------------------+
+| P6_LINE_3            | yes/no               | 0/1 (no is good)     |
++----------------------+----------------------+----------------------+
+| P6_LINE_4            | yes/no               | removed, neither yes |
+|                      |                      | or no is not good    |
+|                      |                      | nor bad              |
++----------------------+----------------------+----------------------+
+| P6_Line_5            | yes/no               | 0/1 (no is good)     |
++----------------------+----------------------+----------------------+
+| P6_Line_6            | yes/no               | removed. neither is  |
+|                      |                      | good or bad. only    |
+|                      |                      | answers to           |
+|                      |                      | P6_Line_7A/B matter  |
++----------------------+----------------------+----------------------+
+| P6_LINE_7A           | yes/no               | 0/1 (no is good)     |
++----------------------+----------------------+----------------------+
+| P6_Line_7B           | yes/no               | 0/1 (no is good)     |
++----------------------+----------------------+----------------------+
+| P6_LINE_10A          | yes/no               | 1 - (10A no) or (10A |
+|                      |                      | yes + 10B yes)       |
+| P6_LINE_10B          | yes/no/NA            |                      |
+|                      |                      | 0 - (10A yes + 10B   |
+|                      |                      | no)                  |
++----------------------+----------------------+----------------------+
+| P6_LINE_12B          | yes/no/NA            | 1 - (12A yes + 12B   |
+|                      |                      | yes) or (12A no)     |
+|                      |                      |                      |
+|                      |                      | 0 - (12 A yes + 12B  |
+|                      |                      | no)                  |
++----------------------+----------------------+----------------------+
+| P6_LINE_12C          | yes/no/NA            | 1 - (12A yes + 12C   |
+|                      |                      | yes) or (12A no)     |
+|                      |                      |                      |
+|                      |                      | 0 - (12 A yes + 12C  |
+|                      |                      | no)                  |
++----------------------+----------------------+----------------------+
+| P6_LINE_16A          | yes/no               | 1 - (16A no) or (16A |
+|                      |                      | yes + 16B yes)       |
+| P6_LINE_16B          | yes/no/NA            |                      |
+|                      |                      | 0 - (16A yes + 16B   |
+|                      |                      | no)                  |
++----------------------+----------------------+----------------------+
+| P6_LINE_18           | request/own we       | 1 - own website      |
+|                      | bsite/another's      |                      |
+|                      | website/other        | 0 - anything else    |
++----------------------+----------------------+----------------------+
+| All other P6\_\*     | yes/no               | 1/0                  |
++----------------------+----------------------+----------------------+
+| P12_LINE_1           | Accrual/cash         | 1 - Accrual          |
+|                      |                      |                      |
+|                      |                      | 0 - anything else    |
++----------------------+----------------------+----------------------+
+| P12_LINE_2A          | both/c on            | 0 - no               |
+|                      | sol/no/seperate      |                      |
+|                      |                      | 1 - anything else    |
++----------------------+----------------------+----------------------+
+| P12_LINE_2B          | both/c on            | 0 - no               |
+|                      | sol/no/seperate      |                      |
+|                      |                      | 1 - anything else    |
++----------------------+----------------------+----------------------+
+| P12_LINE_2C          | yes/no/NA            | 1 -( 2B yes + 2C yes |
+|                      |                      | ) or (2A yes + 2C    |
+|                      |                      | yes) or (2a no ) or  |
+|                      |                      | (2b no)              |
+|                      |                      |                      |
+|                      |                      | 0- (2a yes and 2c    |
+|                      |                      | no) or (2b yes and   |
+|                      |                      | 2c no)               |
++----------------------+----------------------+----------------------+
+| P12_LINE_3A/         | yes/no               | 1 - (3a no) + (3a    |
+|                      |                      | yes +3b yes)         |
+| P12_LINE_3B          | yes/no               |                      |
+|                      |                      | 0 - (3a yes + 3b no) |
++----------------------+----------------------+----------------------+
 
 ```{r}
 #For P6_LINE_1B / P6_LINE_1A >= 0.625
@@ -1178,141 +1154,153 @@ analysis.
 All variables are coded as 1 (good governance practice) or 0 (bad
 governance practice)
 
-+---------+----------------------------------------------+---------+
-| Vari    | Variable Meaning/Coding                      |         |
-| able    |                                              |         |
-| Name    |                                              |         |
-+=========+==============================================+=========+
-| P4\_    | Did the org obtain separate, independent     |         |
-| LINE    | audited financial statements? 1 - yes, 0 -   |         |
-| \_12A   | no                                           |         |
-+---------+----------------------------------------------+---------+
-| P4      | 1- Answered "no" to questions P4_LINE_28A,   |         |
-| \_LIN   | P4_LINE_28B, **AND** P4_LINE_28              |         |
-| E_28    |                                              |         |
-|         | 0 - Answered yes to any of these questions   |         |
-|         |                                              |         |
-|         | Essentially 1 if no business was done with a |         |
-|         | family member and 0 otherwise.               |         |
-+---------+----------------------------------------------+---------+
-| P 4_LI  | 1- (Answered no to P4_LINE_29 ANDP4_Line_29) |         |
-| NE_2    | or (Answered yes to (P4_LINE_29              |         |
-| 9_30    | ORP4_Line_29) AND answered yes to Schedule M |         |
-|         | question 31 )                                |         |
-|         |                                              |         |
-|         | 0 - Answered yes to (P4_LINE_29              |         |
-|         | ORP4_Line_29) AND answered no to Schedule M  |         |
-|         | question 31                                  |         |
-|         |                                              |         |
-|         | i.e. 1 if either (the org did not have more  |         |
-|         | than \$25K in cash contribution AND did not  |         |
-|         | have receive any art/historical              |         |
-|         | treasures/etc.) OR (they do have those       |         |
-|         | things AND they do have a written policy     |         |
-|         | about how to handle them)                    |         |
-+---------+----------------------------------------------+---------+
-| P 6_LI  | 1 - The proportion of independent members on |         |
-| NE_1    | the board is at least 50%                    |         |
-|         |                                              |         |
-|         | 0 - The proportion of independent members on |         |
-|         | the board is less than 50%                   |         |
-+---------+----------------------------------------------+---------+
-| P 6_LI  | 1- **No** officer, director, trustee, or key |         |
-| NE_2    | employee had a family relationship or a      |         |
-|         | business relationship with any other         |         |
-|         | officer, director, trustee, or key employee  |         |
-|         |                                              |         |
-|         | 0- **An** officer, director, trustee, or key |         |
-|         | employee had a family relationship or a      |         |
-|         | business relationship with any other         |         |
-|         | officer, director, trustee, or key employee  |         |
-+---------+----------------------------------------------+---------+
-| P 6_LI  | 1- The org **did not** use a management      |         |
-| NE_3    | company or other person to perform any       |         |
-|         | management duties                            |         |
-|         |                                              |         |
-|         | 0 - The org **did** use a management company |         |
-|         | or other person to perform any management    |         |
-|         | duties                                       |         |
-+---------+----------------------------------------------+---------+
-| P6      | 1 - The meetings by the governing body       |         |
-| \_LIN   | **are** documented                           |         |
-| E_8A    |                                              |         |
-|         | 0 - The meetings by the governing body       |         |
-|         | **are** **not** documented                   |         |
-+---------+----------------------------------------------+---------+
-| P6_L    | 1- The answers to P6_Line_12, 13, and 14 are |         |
-| INE\_   | all yes                                      |         |
-| 12_1    |                                              |         |
-| 3_14    | 0- otherwise                                 |         |
-|         |                                              |         |
-|         | i.e. 1 if the organization has a written     |         |
-|         | conflict of interest policy, **AND** a       |         |
-|         | written whistleblower policy, **AND** a      |         |
-|         | written retention and destruction policy.    |         |
-|         |                                              |         |
-|         | These 3 are combined because seperated they  |         |
-|         | have \>0.90 correlation. And all of these    |         |
-|         | questions get at the same type of            |         |
-|         | governance - do you have written policies    |         |
-|         | for when things go bad?                      |         |
-+---------+----------------------------------------------+---------+
-| P6\_    | 1- A copy of Form 990 is provided to all     |         |
-| LINE    | members before filing the form               |         |
-| \_11A   |                                              |         |
-|         | 0 - otherwise                                |         |
-+---------+----------------------------------------------+---------+
-| P6\_    | 1- The org has a process for determining     |         |
-| LINE    | compensation of the CEO, executive director, |         |
-| \_15A   | or top management officials including a      |         |
-|         | review and approval by independent persons,  |         |
-|         | comparability data, and deliberation         |         |
-|         | decision                                     |         |
-|         |                                              |         |
-|         | 0 - otherwise                                |         |
-+---------+----------------------------------------------+---------+
-| P6      | 1 - Forms 1023 (or 1024), 990, 990-T         |         |
-| \_LIN   | available for public inspection on own       |         |
-| E_18    | website                                      |         |
-|         |                                              |         |
-|         | 0 - These forms were listed on another's     |         |
-|         | website, available upon request, or "other"  |         |
-+---------+----------------------------------------------+---------+
-| P1 2_LI | Did the org use accrual method for           |         |
-| NE_1    | accounting? 1 - yes, 0- no                   |         |
-+---------+----------------------------------------------+---------+
++----------------------+-------------------------------+---+
+| Vari able Name       | Variable Meaning/Coding       |   |
++======================+===============================+===+
+| P4\_ LINE \_12A      | Did the org obtain separate,  |   |
+|                      | independent audited financial |   |
+|                      | statements? 1 - yes, 0 - no   |   |
++----------------------+-------------------------------+---+
+| P4 \_LIN E_28        | 1- Answered "no" to questions |   |
+|                      | P4_LINE_28A, P4_LINE_28B,     |   |
+|                      | **AND** P4_LINE_28            |   |
+|                      |                               |   |
+|                      | 0 - Answered yes to any of    |   |
+|                      | these questions               |   |
+|                      |                               |   |
+|                      | Essentially 1 if no business  |   |
+|                      | was done with a family member |   |
+|                      | and 0 otherwise.              |   |
++----------------------+-------------------------------+---+
+| P 4_LI NE_2 9_30     | 1- (Answered no to P4_LINE_29 |   |
+|                      | ANDP4_Line_29) or (Answered   |   |
+|                      | yes to (P4_LINE_29            |   |
+|                      | ORP4_Line_29) AND answered    |   |
+|                      | yes to Schedule M question 31 |   |
+|                      | )                             |   |
+|                      |                               |   |
+|                      | 0 - Answered yes to           |   |
+|                      | (P4_LINE_29 ORP4_Line_29) AND |   |
+|                      | answered no to Schedule M     |   |
+|                      | question 31                   |   |
+|                      |                               |   |
+|                      | i.e. 1 if either (the org did |   |
+|                      | not have more than \$25K in   |   |
+|                      | cash contribution AND did not |   |
+|                      | have receive any              |   |
+|                      | art/historical                |   |
+|                      | treasures/etc.) OR (they do   |   |
+|                      | have those things AND they do |   |
+|                      | have a written policy about   |   |
+|                      | how to handle them)           |   |
++----------------------+-------------------------------+---+
+| P 6_LI NE_1          | 1 - The proportion of         |   |
+|                      | independent members on the    |   |
+|                      | board is at least 50%         |   |
+|                      |                               |   |
+|                      | 0 - The proportion of         |   |
+|                      | independent members on the    |   |
+|                      | board is less than 50%        |   |
++----------------------+-------------------------------+---+
+| P 6_LI NE_2          | 1- **No** officer, director,  |   |
+|                      | trustee, or key employee had  |   |
+|                      | a family relationship or a    |   |
+|                      | business relationship with    |   |
+|                      | any other officer, director,  |   |
+|                      | trustee, or key employee      |   |
+|                      |                               |   |
+|                      | 0- **An** officer, director,  |   |
+|                      | trustee, or key employee had  |   |
+|                      | a family relationship or a    |   |
+|                      | business relationship with    |   |
+|                      | any other officer, director,  |   |
+|                      | trustee, or key employee      |   |
++----------------------+-------------------------------+---+
+| P 6_LI NE_3          | 1- The org **did not** use a  |   |
+|                      | management company or other   |   |
+|                      | person to perform any         |   |
+|                      | management duties             |   |
+|                      |                               |   |
+|                      | 0 - The org **did** use a     |   |
+|                      | management company or other   |   |
+|                      | person to perform any         |   |
+|                      | management duties             |   |
++----------------------+-------------------------------+---+
+| P6 \_LIN E_8A        | 1 - The meetings by the       |   |
+|                      | governing body **are**        |   |
+|                      | documented                    |   |
+|                      |                               |   |
+|                      | 0 - The meetings by the       |   |
+|                      | governing body **are**        |   |
+|                      | **not** documented            |   |
++----------------------+-------------------------------+---+
+| P6_L INE\_ 12_1 3_14 | 1- The answers to P6_Line_12, |   |
+|                      | 13, and 14 are all yes        |   |
+|                      |                               |   |
+|                      | 0- otherwise                  |   |
+|                      |                               |   |
+|                      | i.e. 1 if the organization    |   |
+|                      | has a written conflict of     |   |
+|                      | interest policy, **AND** a    |   |
+|                      | written whistleblower policy, |   |
+|                      | **AND** a written retention   |   |
+|                      | and destruction policy.       |   |
+|                      |                               |   |
+|                      | These 3 are combined because  |   |
+|                      | seperated they have \>0.90    |   |
+|                      | correlation. And all of these |   |
+|                      | questions get at the same     |   |
+|                      | type of governance - do you   |   |
+|                      | have written policies for     |   |
+|                      | when things go bad?           |   |
++----------------------+-------------------------------+---+
+| P6\_ LINE \_11A      | 1- A copy of Form 990 is      |   |
+|                      | provided to all members       |   |
+|                      | before filing the form        |   |
+|                      |                               |   |
+|                      | 0 - otherwise                 |   |
++----------------------+-------------------------------+---+
+| P6\_ LINE \_15A      | 1- The org has a process for  |   |
+|                      | determining compensation of   |   |
+|                      | the CEO, executive director,  |   |
+|                      | or top management officials   |   |
+|                      | including a review and        |   |
+|                      | approval by independent       |   |
+|                      | persons, comparability data,  |   |
+|                      | and deliberation decision     |   |
+|                      |                               |   |
+|                      | 0 - otherwise                 |   |
++----------------------+-------------------------------+---+
+| P6 \_LIN E_18        | 1 - Forms 1023 (or 1024),     |   |
+|                      | 990, 990-T available for      |   |
+|                      | public inspection on own      |   |
+|                      | website                       |   |
+|                      |                               |   |
+|                      | 0 - These forms were listed   |   |
+|                      | on another's website,         |   |
+|                      | available upon request, or    |   |
+|                      | "other"                       |   |
++----------------------+-------------------------------+---+
+| P1 2_LI NE_1         | Did the org use accrual       |   |
+|                      | method for accounting? 1 -    |   |
+|                      | yes, 0- no                    |   |
++----------------------+-------------------------------+---+
 
 ### Summary of Variables Not Used in Index
 
-+----------------------+---------------------------------------------+
-| Variable Name        | Reason why it is not used                   |
-+======================+=============================================+
-| P4_LINE_12B          | Perfectly correlated with P4_Line_12A       |
-+----------------------+---------------------------------------------+
-| P6_LINE_4            | Removed, neither good nor bad               |
-+----------------------+---------------------------------------------+
-| P6_Line_5            | Less than 3% in 0 category                  |
-+----------------------+---------------------------------------------+
-| P6_Line_6            | Removed, neither good nor bad               |
-+----------------------+---------------------------------------------+
-| P6_LINE_7A,          | Causing singularity issues                  |
-| P6_LINE_7B           |                                             |
-+----------------------+---------------------------------------------+
-| P6_Line_8B           | Perfectly correlated with P6_Line_8A        |
-+----------------------+---------------------------------------------+
-| P6_Line_12B,         | Folded into question 12A,                   |
-| P6_LINE_12C          |                                             |
-+----------------------+---------------------------------------------+
-| P6_LINE_15A          | Perfectly correlated with P6_Line_15A       |
-+----------------------+---------------------------------------------+
-| P6_LINE_16A,         | Less than 3% in 0 category                  |
-| P6_LINE_16B          |                                             |
-+----------------------+---------------------------------------------+
-| P12_LINE_2A,         | Less than 3% in 1 category                  |
-| P12_LINE_2C          |                                             |
-+----------------------+---------------------------------------------+
-| P12_LINE_2B          | Perfectly correlated with P12_Line_2A       |
-+----------------------+---------------------------------------------+
+| Variable Name            | Reason why it is not used             |
+|--------------------------|---------------------------------------|
+| P4_LINE_12B              | Perfectly correlated with P4_Line_12A |
+| P6_LINE_4                | Removed, neither good nor bad         |
+| P6_Line_5                | Less than 3% in 0 category            |
+| P6_Line_6                | Removed, neither good nor bad         |
+| P6_LINE_7A, P6_LINE_7B   | Causing singularity issues            |
+| P6_Line_8B               | Perfectly correlated with P6_Line_8A  |
+| P6_Line_12B, P6_LINE_12C | Folded into question 12A,             |
+| P6_LINE_15A              | Perfectly correlated with P6_Line_15A |
+| P6_LINE_16A, P6_LINE_16B | Less than 3% in 0 category            |
+| P12_LINE_2A, P12_LINE_2C | Less than 3% in 1 category            |
+| P12_LINE_2B              | Perfectly correlated with P12_Line_2A |
 
 ```{r}
 #make the features matrix
@@ -1417,96 +1405,105 @@ hist(all.dat$total.score,
 
 #### 6 Factors:
 
-+-----------------------------------------+--------------+
-| Variables( positive meaning i.e. value  | Factor Group |
-| = 1)                                    | Names        |
-+-----------------------------------------+--------------+
-| -   P12_Line_1: Accounting method is    | -   Have doc |
-|     accural (bad is anything else)      |              |
-|                                         |   umentable/ |
-| -   P4_Line_12: The organization        |              |
-|     obtains separate, independent       | written      |
-|     audited financial statements        |              |
-|                                         | accounting   |
-| -   P6_Line_12_13_14: The organization  |              |
-|     has a written conflict of interest  | practices    |
-|     policy, a written whistleblower     | and          |
-|     policy, and a written retention and |              |
-|     destruction policy                  | general      |
-|                                         |              |
-|                                         | policies     |
-+-----------------------------------------+--------------+
-| -   P6_LINE_8A: The meetings by the     | -   Open d   |
-|     governing body are documented       |              |
-|                                         |   ocumenting |
-|     -   Correlated with 8b. meetings by |     of orga  |
-|         each committee are documented   |              |
-|                                         |   nizational |
-|                                         |              |
-|                                         | business     |
-+-----------------------------------------+--------------+
-| -   P6_LINE_15A: The org has a process  | -   Good     |
-|     for determining compensation of the |              |
-|     CEO, executive director, or top     | policies for |
-|     management officials including a    | making the   |
-|     review and approval by independent  | board and    |
-|     persons, comparability data, and    | for paying   |
-|     deliberation decision               | them         |
-|                                         |              |
-|     -   Correlated with Line 15b. The   |              |
-|         org has a process for           |              |
-|         determining compensation of     |              |
-|         other officers or key employees |              |
-|         includin a review and approval  |              |
-|         by independent persons,         |              |
-|         comparability data, and         |              |
-|         deliberation decision           |              |
-|                                         |              |
-| -   P6_Line_1: The percent of           |              |
-|     independent members on the voting   |              |
-|     board is \>50%                      |              |
-+-----------------------------------------+--------------+
-| -   (Negative) P6_LINE_3: The org did   | -   The or   |
-|     not use a management company or     |     ?did?    |
-|     other person to perform any         |     using a  |
-|     management duties                   |              |
-|                                         | management   |
-|                                         |              |
-|                                         | company      |
-+-----------------------------------------+--------------+
-| -   P6_Line_11A: A copy of Form 990 is  | -   IRS      |
-|     provided to all members before      |     forms    |
-|     filing the form                     |     are      |
-|                                         |              |
-| -   P6_Line_18: Forms 1023 (or 1024),   | available    |
-|     990, 990-T available for public     | for public   |
-|     inspection on own website           |              |
-|                                         | inspection   |
-+-----------------------------------------+--------------+
-| -   (Negative) P4_Line_28: The org was  | -   These    |
-|     **not** a party to a business       |     are all  |
-|     transaction to with an entity of    |     about    |
-|     which a current or former officer,  |     doing    |
-|     director, trustee, or key employee  |              |
-|     was an officer, director, trustee,  | business     |
-|     or direct or indirect owner         | with family  |
-|                                         | or having    |
-| -   (Negative) P6_Line_2: **No**        | large/       |
-|     officer, director, trustee, or key  |              |
-|     employee had a family relationship  | expensive    |
-|     or a business relationship with any |              |
-|     other officer, director, trustee,   | assests      |
-|     or key employee?                    |              |
-|                                         |              |
-| -   (Negative) P4_Line_29: Either (the  |              |
-|     org did not have more than \$25K in |              |
-|     cash contribution AND did not have  |              |
-|     receive any art/historical          |              |
-|     treasures/etc.) OR (they do have    |              |
-|     those things AND they do have a     |              |
-|     written policy about how to handle  |              |
-|     them)                               |              |
-+-----------------------------------------+--------------+
++----------------------------------+----------------------------------+
+| Variables( positive meaning i.e. | Factor Group Names               |
+| value = 1)                       |                                  |
++----------------------------------+----------------------------------+
+| -   P12_Line_1: Accounting       | -   Have doc                     |
+|     method is accural (bad is    |                                  |
+|     anything else)               | umentable/                       |
+|                                  |                                  |
+| -   P4_Line_12: The organization | written                          |
+|     obtains separate,            |                                  |
+|     independent audited          | accounting                       |
+|     financial statements         |                                  |
+|                                  | practices and                    |
+| -   P6_Line_12_13_14: The        |                                  |
+|     organization has a written   | general                          |
+|     conflict of interest policy, |                                  |
+|     a written whistleblower      | policies                         |
+|     policy, and a written        |                                  |
+|     retention and destruction    |                                  |
+|     policy                       |                                  |
++----------------------------------+----------------------------------+
+| -   P6_LINE_8A: The meetings by  | -   Open d                       |
+|     the governing body are       |                                  |
+|     documented                   | ocumenting of orga               |
+|                                  |                                  |
+|     -   Correlated with 8b.      | nizational                       |
+|         meetings by each         |                                  |
+|         committee are documented | business                         |
++----------------------------------+----------------------------------+
+| -   P6_LINE_15A: The org has a   | -   Good                         |
+|     process for determining      |                                  |
+|     compensation of the CEO,     | policies for making the board    |
+|     executive director, or top   | and for paying them              |
+|     management officials         |                                  |
+|     including a review and       |                                  |
+|     approval by independent      |                                  |
+|     persons, comparability data, |                                  |
+|     and deliberation decision    |                                  |
+|                                  |                                  |
+|     -   Correlated with Line     |                                  |
+|         15b. The org has a       |                                  |
+|         process for determining  |                                  |
+|         compensation of other    |                                  |
+|         officers or key          |                                  |
+|         employees includin a     |                                  |
+|         review and approval by   |                                  |
+|         independent persons,     |                                  |
+|         comparability data, and  |                                  |
+|         deliberation decision    |                                  |
+|                                  |                                  |
+| -   P6_Line_1: The percent of    |                                  |
+|     independent members on the   |                                  |
+|     voting board is \>50%        |                                  |
++----------------------------------+----------------------------------+
+| -   (Negative) P6_LINE_3: The    | -   The or ?did? using a         |
+|     org did not use a management |                                  |
+|     company or other person to   | management                       |
+|     perform any management       |                                  |
+|     duties                       | company                          |
++----------------------------------+----------------------------------+
+| -   P6_Line_11A: A copy of Form  | -   IRS forms are                |
+|     990 is provided to all       |                                  |
+|     members before filing the    | available for public             |
+|     form                         |                                  |
+|                                  | inspection                       |
+| -   P6_Line_18: Forms 1023 (or   |                                  |
+|     1024), 990, 990-T available  |                                  |
+|     for public inspection on own |                                  |
+|     website                      |                                  |
++----------------------------------+----------------------------------+
+| -   (Negative) P4_Line_28: The   | -   These are all about doing    |
+|     org was **not** a party to a |                                  |
+|     business transaction to with | business with family or having   |
+|     an entity of which a current | large/                           |
+|     or former officer, director, |                                  |
+|     trustee, or key employee was | expensive                        |
+|     an officer, director,        |                                  |
+|     trustee, or direct or        | assests                          |
+|     indirect owner               |                                  |
+|                                  |                                  |
+| -   (Negative) P6_Line_2: **No** |                                  |
+|     officer, director, trustee,  |                                  |
+|     or key employee had a family |                                  |
+|     relationship or a business   |                                  |
+|     relationship with any other  |                                  |
+|     officer, director, trustee,  |                                  |
+|     or key employee?             |                                  |
+|                                  |                                  |
+| -   (Negative) P4_Line_29:       |                                  |
+|     Either (the org did not have |                                  |
+|     more than \$25K in cash      |                                  |
+|     contribution AND did not     |                                  |
+|     have receive any             |                                  |
+|     art/historical               |                                  |
+|     treasures/etc.) OR (they do  |                                  |
+|     have those things AND they   |                                  |
+|     do have a written policy     |                                  |
+|     about how to handle them)    |                                  |
++----------------------------------+----------------------------------+
 
 ## Step 8: Calculate scores for new data
 
