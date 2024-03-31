@@ -116,7 +116,7 @@ library(psych)
 
 ```{r}
 #For P6_LINE_1B / P6_LINE_1A >= 0.625
-indep_members_threshold <- 0.5 #this is the median value for this data set
+indep_members_threshold <- 0.5 #this is ~ the median value for this data set
 
 
 design_mat <- 
@@ -252,7 +252,7 @@ tab_summary%>%
   kable_styling()
 
 
-### Remove varaibles where less than 3% in either class 
+### Remove varaibles where less than 2% in either class 
 ### This was as small as I could make it without the correlation matrix being singular
 ### Remove P12_Line_2B because it is perfectly correlated with 2A
 ### REmove P6_Line_12B, P6_Line_12C because it is causing singularity issues with P6_Line_12
@@ -282,7 +282,7 @@ corr_mat <- hetcor(design_mat_keep, ML = TRUE) #usues maximum likelihood estimat
 ggcorrplot(corr_mat$correlations,
            hc.order = TRUE ) +
   ggtitle("Correlation Matrix") +
-  labs(subtitle = "Variables with More than 3% is either class")
+  labs(subtitle = "Variables with More than 2% is either class")
 ```
 
 ## Factor Analysis
@@ -441,7 +441,7 @@ design_mat <-
 
 #### Trying the Correlations Again without the problematic variables
 
-I decided the remove P6_Line_7 entirely because its removal makes the factors analysis incredibly clean. I will talk to Jesse about the implications of this.
+I decided the remove P6_Line_7 entirely since its removal makes the factors analysis incredibly clean. I will talk to Jesse about the implications of this. Is stakeholders something we want to measure in our governance index?
 
 ```{r}
 #updated the variables to keep
