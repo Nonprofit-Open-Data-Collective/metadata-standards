@@ -11,7 +11,7 @@
 
 <meta name="author" content="Olivia Beck" />
 
-<meta name="date" content="2024-01-03" />
+<meta name="date" content="2024-02-11" />
 
 <title>Script to Make Board Governance Data</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">Script to Make Board Governance Data</h1>
 <h4 class="author">Olivia Beck</h4>
-<h4 class="date">2024-01-03</h4>
+<h4 class="date">2024-02-11</h4>
 
 </div>
 
@@ -445,8 +445,8 @@ interests that could give rise to conflicts? (y/n) 12c. Whether
 regularly and consistently monitor and enforce compliance with the
 policy (y/n)</p>
 <ol start="13" style="list-style-type: decimal">
-<li>Whether have a written whistleblower policy* (y/n)</li>
-<li>Whether have a written document retention and destruction policy*
+<li>Whether have a written whistleblower policy (y/n)</li>
+<li>Whether have a written document retention and destruction policy
 (y/n)</li>
 </ol>
 <p>15a. Whether have a process for determining compensation of the CEO,
@@ -657,7 +657,7 @@ for(i in 1:length(years)){
   colnames(temp) &lt;- c(&quot;OBJECTID&quot;, &quot;URL&quot;, &quot;RETURN_VERSION&quot;, &quot;ORG_EIN&quot;,
                      &quot;P4_LINE_12A&quot;, &quot;P4_LINE_12B&quot;,
                      &quot;P4_LINE_28A&quot;, &quot;P4_LINE_28B&quot;, &quot;P4_LINE_28C&quot;,
-                     &quot;P4_LINE_29&quot;, 
+                     &quot;P4_LINE_29&quot;,
                      &quot;P4_LINE_30&quot;)
   dat_4[[i]] &lt;- temp
 }
