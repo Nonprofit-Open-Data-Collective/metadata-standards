@@ -86,7 +86,27 @@ table(bmf_irs$DEDUCTIBILITY, bmf_irs$donations_deductible)
 
 bmf_irs %>% 
   filter(DEDUCTIBILITY == "1" & donations_deductible == "NO") %>%
-  pull(SUBSECTION) %>% 
+  pull(govt_established) %>% 
+  table()
+
+bmf_irs %>% 
+  filter(DEDUCTIBILITY == "1" & donations_deductible == "NO") %>% 
+  mutate(major.group = str_sub(NTEE_CD, 1, 1))%>%
+  pull(major.group) %>% 
+  table()
+
+bmf_irs %>% 
+  filter(DEDUCTIBILITY == "1" & donations_deductible == "NO") %>% 
+  mutate(major.group = str_sub(NTEE_CD, 1, 1))%>%
+  filter(major.group == "M") %>% 
+  pull(NTEE_CD) %>%
+  table()
+
+bmf_irs %>% 
+  filter(DEDUCTIBILITY == "1" & donations_deductible == "NO") %>% 
+  mutate(major.group = str_sub(NTEE_CD, 1, 1))%>%
+  filter(major.group == "W") %>% 
+  pull(NTEE_CD) %>%
   table()
 
 
