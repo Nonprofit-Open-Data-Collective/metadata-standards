@@ -24,7 +24,7 @@ bmf_urban <- bmf_urban %>%
   unnest(new_columns) 
 
 
-### Import BMF From IRS - needed for duductibility code 
+### Import BMF From IRS - needed for deductibility code 
 e01 <- "https://www.irs.gov/pub/irs-soi/eo1.csv"
 e02 <- "https://www.irs.gov/pub/irs-soi/eo2.csv"
 e03 <- "https://www.irs.gov/pub/irs-soi/eo3.csv"
@@ -49,8 +49,19 @@ bmf_irs <- bmf_irs %>%
   unnest(new_columns) 
 
 
+## Read in pub78
+pub78link <- "https://nccsdata.s3.us-east-1.amazonaws.com/raw/current-exempt-orgs/2024-04-CURRENT-EXEMPT-ORGS-DATABASE.csv"
 
-save(bmf_urban, bmf_irs, file = "tax-exempt-status/bmf-with-501ctype.Rdata")
+pub78 <- read_csv(pub78link)
+
+## merge irsbmf and pub78
+
+pub78_bmf <-
+  pub78 %>% 
+  left_join(bmf_irs, by = join_by(ein == EIN))
+
+
+save(bmf_urban, bmf_irs,pub78_bmf, file = "tax-exempt-status/bmf-with-501ctype.Rdata")
 
 
 ##### FRCD Vs REQUIRED_990 --------------------
@@ -85,12 +96,12 @@ table(bmf_urban$FNDNCD, bmf_urban$tax_exempt_subgroup)
 table(bmf_irs$DEDUCTIBILITY, bmf_irs$donations_deductible)
 
 bmf_irs %>% 
-  filter(DEDUCTIBILITY == "1" & donations_deductible == "NO") %>%
-  pull(govt_established) %>% 
+  filter(DEDUCTIBILITY == "2" & donations_deductible == "YR") %>%
+  pull(SUBSECTION) %>% 
   table()
 
 bmf_irs %>% 
-  filter(DEDUCTIBILITY == "1" & donations_deductible == "NO") %>% 
+  filter(DEDUCTIBILITY == "2" & donations_deductible == "YU") %>% 
   mutate(major.group = str_sub(NTEE_CD, 1, 1))%>%
   pull(major.group) %>% 
   table()
@@ -145,3 +156,92 @@ bmf_irs %>%
 table(bmf_irs$STATUS, bmf_irs$DEDUCTIBILITY)
 table(bmf_irs$STATUS, bmf_irs$donations_deductible)
 table(bmf_irs$donations_deductible, bmf_irs$DEDUCTIBILITY, bmf_irs$STATUS)
+
+
+### Pub 78 ----
+table(pub78_bmf$deductibility_status, pub78_bmf$SUBSECTION)
+
+table(pub78_bmf$deductibility_status, pub78_bmf$FOUNDATION)
+
+pub78_bmf %>% 
+  mutate(twodigits = substr(NTEE_CD, 2, 3)) %>% 
+  filter(twodigits < 20) %>% 
+  group_by(twodigits, FOUNDATION ) %>% 
+  summarise(count = n()) %>%   
+  arrange((FOUNDATION)) %>%
+  pivot_wider(names_from = FOUNDATION, values_from = count) %>% 
+  arrange((twodigits)) %>%
+  View()
+
+
+pub78_bmf %>% 
+  mutate(twodigits = substr(NTEE_CD, 2, 3)) %>% 
+  filter(twodigits < 20 & FOUNDATION %in% c("10")) %>% 
+  mutate(major.group = substr(NTEE_CD, 1, 1)) %>% 
+  pull(major.group) %>% 
+  table()
+  
+pub78_bmf %>% 
+  mutate(twodigits = substr(NTEE_CD, 2, 3)) %>% 
+  filter(twodigits < 20 & FOUNDATION %in% c("12")) %>% 
+  mutate(major.group = substr(NTEE_CD, 1, 1)) %>% 
+  group_by(major.group, twodigits) %>% 
+  summarise(count = n()) %>% 
+  arrange((major.group)) %>%
+  pivot_wider(names_from = major.group, values_from = count) %>% 
+  arrange((twodigits))
+
+
+table(pub78_bmf$deductibility_status, pub78_bmf$DEDUCTIBILITY)
+table(pub78_bmf$deductibility_status, pub78_bmf$donations_deductible, pub78_bmf$DEDUCTIBILITY )
+
+
+pub78_bmf %>% 
+  filter(deductibility_status == "EO" & donations_deductible %in% c("NE", "YR")) %>% 
+  group_by(SUBSECTION, donations_deductible) %>% 
+  summarise(count = n())
+
+pub78_bmf %>% 
+  filter(deductibility_status == "EO" & SUBSECTION == "04") %>% 
+  mutate(major.group = str_sub(NTEE_CD, 1, 1))%>%
+  pull(major.group) %>%
+  table()
+
+pub78_bmf %>% 
+  filter(SUBSECTION == "01") %>% 
+  pull(deductibility_status) %>% 
+  table()
+
+
+pub78_bmf %>% 
+  filter(grepl("LODGE", deductibility_status)) %>%  
+  pull(SUBSECTION) %>% 
+  table()
+
+
+pub78_bmf %>% 
+  filter(grepl("GROUP", deductibility_status)) %>%  
+  pull(SUBSECTION) %>% 
+  table()
+
+pub78_bmf %>% 
+  filter(grepl("GROUP", deductibility_status) & !grepl("LODGE", deductibility_status)) %>%  
+  pull(SUBSECTION) %>% 
+  table()
+
+pub78_bmf %>% 
+  filter(grepl("GROUP", deductibility_status)) %>%
+  mutate(hasGEN = GROUP != "0000" ) %>% 
+  pull(hasGEN) %>% 
+  table()
+
+
+pub78_bmf %>% 
+  filter(grepl("GROUP", deductibility_status) & !is.na(GROUP)) %>%
+  mutate(hasGEN = GROUP != "0000" ) %>% 
+  group_by(SUBSECTION, GROUP) %>% 
+  summarise(count = n()) %>% 
+  pull(count) %>%
+  table()
+
+

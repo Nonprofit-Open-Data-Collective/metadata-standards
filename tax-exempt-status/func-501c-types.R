@@ -95,16 +95,13 @@ supporting <- c("I", "H" , "I", "I" , "I", "I" , "I", "L" , "I", "L" ,
 other_filing_requirements <- c("NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA",
                                "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NO", "NA", "NA", "NA", "NA", "NA",
                                "NA", "NA", "NA", "1065", "NA", "NA", "NA", "NA", "NA", "1120-C", "NA")
- 
-donations_deductible <- c("NA", "YR", "RES", "NO", "NO", "NO", "RES", "RES", "RES", "RES", "RES", "RES",
-                          "RES", "RES", "RES", "RES", "RES", "RES", "RES", "NA", "NO", "RES", "NO", "RES",
-                          "NA", "RES", "RES", "RES", "RES", "Y", "NA", "YU", "YU", "YU", "NO", "NA", "NO")
 
-donations_deductible <- c("YE", "NO", "YU", "NO",  "NO", "NO", "NO", "YE",  "NO",
-                          "YE", "NO", "NO",  "YU", "NO", "NO", "NO",  "NO", "NO",
-                          "YU", "NA",  "NO", "NO", "NO", "NO",  "NO", "NO", "NO", 
-                          "NO",  "NO", "NO", "YU", "YU",  "YU", "YU", "NO", "NO", 
+donations_deductible <- c("NE", "YR", "YU", "NE", "NE", "NO", "NO", "YR", "NO", 
+                          "YR", "NO", "NO", "YR", "NO", "NO", "NO", "NO", "NO",
+                          "YR", "NO", "NO", "NO", "NO", "NO", "NO", "NO", "NO",
+                          "NO", "NO", "NO", "YU", "YU", "YU", "YU", "NO", "NO",
                           "NO") 
+
 
 ### Make the data frame
 
