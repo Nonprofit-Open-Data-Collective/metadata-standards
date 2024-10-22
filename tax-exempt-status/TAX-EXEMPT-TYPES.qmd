@@ -1,0 +1,495 @@
+---
+title: "Tax Exempt Type (501c) Taxonomy"
+format:
+  html:
+    html-table-processing: none
+    code-fold: true
+    embed-resources: true
+    toc: true
+number-sections: false
+execute:
+  warning: false
+  message: false
+  echo: true 
+---
+
+
+```{r, echo=F}
+library( dplyr )
+library( stringr )
+library( pander )
+library( knitr )
+library( data.table )
+library( DT )
+library( kableExtra )
+```
+
+
+
+## Unified BMF
+
+```{r}
+#| code-fold: true
+
+new.order <- 
+c("EIN", "EIN2",
+"ORG_NAME_CURRENT","ORG_NAME_SEC",
+"ORG_FISCAL_YEAR", "ORG_PERS_ICO", 
+"ORG_FISCAL_PERIOD",
+"ORG_RULING_DATE", "ORG_RULING_YEAR", 
+### CORE COUNTS
+"ORG_YEAR_FIRST", "ORG_YEAR_LAST", 
+"ORG_YEAR_COUNT", 
+"NTEE_IRS", "NTEE_NCCS", "NTEEV2", 
+"NCCS_LEVEL_1", 
+"NCCS_LEVEL_2", 
+"NCCS_LEVEL_3",
+### BMF
+"BMF_SUBSECTION_CODE", "BMF_STATUS_CODE", 
+"BMF_PF_FILING_REQ_CODE", "BMF_ORGANIZATION_CODE", 
+"BMF_INCOME_CODE", "BMF_GROUP_EXEMPT_NUM", 
+"BMF_FOUNDATION_CODE", "BMF_FILING_REQ_CODE", 
+"BMF_DEDUCTIBILITY_CODE", "BMF_CLASSIFICATION_CODE", 
+"BMF_ASSET_CODE", "BMF_AFFILIATION_CODE",
+### FISCAL FIELDS 
+"F990_TOTAL_REVENUE_RECENT", 
+"F990_TOTAL_INCOME_RECENT", 
+"F990_TOTAL_ASSETS_RECENT", 
+"F990_ORG_ADDR_CITY", 
+"F990_ORG_ADDR_STATE", 
+"F990_ORG_ADDR_ZIP", 
+"F990_ORG_ADDR_STREET",
+### GEOCODE
+"ORG_ADDR_FULL", "ORG_ADDR_MATCH", 
+"LATITUDE", "LONGITUDE", 
+"GEOCODER_SCORE", "GEOCODER_MATCH", 
+### CENSUS
+"CENSUS_CBSA_FIPS", 
+"CENSUS_CBSA_NAME", 
+"CENSUS_BLOCK_FIPS", 
+"CENSUS_URBAN_AREA", 
+"CENSUS_STATE_ABBR", 
+"CENSUS_COUNTY_NAME"  )
+```
+
+
+```{r, cache=TRUE}
+# setwd( "C:/Users/jdlec/Dropbox/00 - URBAN/taxonomies" )
+d <- data.table::fread( "BMF_UNIFIED_V1.1.csv" ) %>% as.data.frame()
+d <- d[ new.order ]
+```
+
+```{r}
+tail(d,10) %>% DT::datatable( options=list( pageLength=5, autoWidth=TRUE ))
+```
+
+
+### BMF_STATUS_CODE
+
+```{r}
+#| html-table-processing: none
+ 
+table( d$BMF_STATUS_CODE, useNA="ifany" )     |> 
+  knitr::kable( escape = FALSE, format = "html" ) |> 
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+### BMF_FOUNDATION_CODE
+
+```{r}
+#| html-table-processing: none
+
+table( d$BMF_FOUNDATION_CODE, useNA="ifany" ) |> 
+  knitr::kable() |> 
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+
+### BMF_SUBSECTION_CODE
+
+```{r}
+table( d$BMF_SUBSECTION_CODE, useNA="ifany" ) |> 
+  knitr::kable() |> 
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+### BMF_CLASSIFICATION_CODE
+
+```{r}
+table( d$BMF_CLASSIFICATION_CODE, useNA="ifany" ) |> 
+  head(10) |> 
+  kable( format = "html" ) %>%  
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+### SSCC
+
+```{r}
+## Classification Codes are 4-digits
+
+d$CC1 <- substr( d$BMF_CLASSIFICATION_CODE, 1, 1 )
+d$CC2 <- substr( d$BMF_CLASSIFICATION_CODE, 2, 2 )
+d$CC3 <- substr( d$BMF_CLASSIFICATION_CODE, 3, 3 )
+d$CC4 <- substr( d$BMF_CLASSIFICATION_CODE, 4, 4 )
+
+d$SS   <- stringr::str_pad( d$BMF_SUBSECTION_CODE, 2, pad = "0" )
+d$SS   <- paste0( "c", d$SS )
+d$SSCC <- paste0( d$SS, "-", d$CC1 )
+
+table( d$SSCC, useNA="ifany" ) %>% 
+  head(10) %>%
+  kbl( format = "html" ) %>%  
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+
+## Subsector and Classification Codes
+
+**SS:** Subsector (501c) Codes 
+
+**CC:** Classification Codes
+
+Note that Classification Codes are also referred to as Tax-Exempt Purpose codes. When applying for tax-exempt status the organization must specify which types of activities they intend to pursue, which would qualify them for a tax-exempt status. For example, 501c3 Charities have the following options: 
+
+- (1) Charitable Purpose [yes/no]
+- (2) Religious Purpose [yes/no]
+- (3) Educational Purpose [yes/no]
+- (4) Scientific Purpose [yes/no]
+- (5) Literary Purpose [yes/no]
+- (6) Public Safety Purpose [yes/no]
+- (7) Amateur Sports Purpose [yes/no]
+- (8) Prevent Cruelty to Animals and/or Children [yes/no]
+
+These are not mutually exclusive - an organization can select several. Which is why the CC is a 4-digit string (all selections are included in the string)
+
+Data Dictionary
+
+- SS: BMF 501c Subsector Codes 
+- SS2: BMF code *XX* in format *cXX*
+- SSTYPE: Label for SS
+- SSTYPE2: Longer label that includes 501c type
+- CC1: Classification Code number 1 in the 4-digit string 
+- SSCC: Combined SS and CC code in the format SS2-CC (*c01-1*)
+- SSCCTYPE: Label of SSCC type
+- SSCCTYPE2: Label of SSCC type with SSCC code
+- SSCCTYPE3: Label of SSCC type with SS code and SSCC code
+- BMF_COUNT: Table of SSCC from most recent IRS BMF file.
+- BMF_DD: YES/NO indicating whether the group appears in the BMF data dictionary PDF
+
+```{r}
+# setwd( "C:/Users/jdlec/Dropbox/00 - URBAN/taxonomies" )
+ss <- read.csv("sscc.csv")
+
+ss %>% DT::datatable( options=list( pageLength=5, autoWidth=TRUE ))
+```
+
+
+## IRS BMF
+
+```{r, cache=TRUE}
+# setwd( "C:/Users/jdlec/Dropbox/00 - URBAN/taxonomies" )
+
+bmf1 <- read.csv("eo1.csv")
+bmf2 <- read.csv("eo2.csv")
+bmf3 <- read.csv("eo3.csv")
+bmf <- bind_rows( bmf1, bmf2, bmf3 )
+
+bmf$SS <- stringr::str_pad( bmf$SUBSECTION, 2, pad = "0" )
+bmf$SS <- paste0( "c", bmf$SS )
+
+bmf$CC1 <- substr( bmf$CLASSIFICATION, 1, 1 )
+bmf$CLASSIFICATION <- gsub( "0", "", bmf$CLASSIFICATION )
+bmf$CC2 <- substr( bmf$CLASSIFICATION, 2, 2 )
+bmf$CC3 <- substr( bmf$CLASSIFICATION, 3, 3 )
+bmf$CC4 <- substr( bmf$CLASSIFICATION, 4, 4 )
+
+bmf$SSCC <- paste0( bmf$SS, "-", bmf$CC1 )
+
+tail( bmf, 5 )   %>%  DT::datatable()
+```
+
+
+### CC1 
+
+```{r}
+table( bmf$CC1, useNA="ifany" ) %>% 
+  kable( format = "html" ) %>%  
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+### CC2
+
+```{r}
+table( bmf$CC2, useNA="ifany" ) %>% 
+  kable( format = "html" ) %>%  
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+### CC3
+
+```{r}
+table( bmf$CC3, useNA="ifany" ) %>% 
+  kable( format = "html" ) %>%  
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+### CC4
+
+```{r}
+table( bmf$CC4, useNA="ifany" ) %>% 
+  kable( format = "html" ) %>%  
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+
+Add labels to the BMF 
+
+```{r}
+ss2 <- ss[c("SSCC","SSTYPE","SSTYPE2","SSCCTYPE","SSCCTYPE2","SSCCTYPE3")]
+bmf <- merge( bmf, ss2, by="SSCC", all.x=T )
+```
+
+
+### SSCCTYPE2
+
+```{r}
+t <- 
+  bmf %>%
+  group_by( SSTYPE2, SSCCTYPE2 ) %>%
+  summarize( N=n() ) %>%
+  mutate( nss=sum(N) ) %>%
+  mutate( prop=round( (N/nss),3) ) %>%
+  ungroup() 
+
+t %>% 
+  kable( escape=FALSE, format = "html" ) %>%  
+  kable_paper()
+```
+
+
+```{r}
+t %>% pander()
+```
+
+
+### SSCCTYPE3
+
+```{r, eval=F, echo=F}
+table( bmf$SSCCTYPE3, useNA="ifany" ) %>% 
+  kable( format = "html" ) %>%  
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+
+## Tax Exempt Types
+
+**variable names**
+
+- bmf_code
+- irs_tax_code
+- v501c_label
+- v501c_desc
+- v501c_desc2
+
+---  
+
+**exempt_type_stakeholder**
+
+- **MEMBERS**: The organization's primary stakeholders are members. 
+- **SOCIETY**: The organization is accountable to the community it serves. 
+- **PARENT ORG**: The organization was incorporated as a subsidiary entity to another nonprofit.
+
+---  
+
+
+**exempt_type_primary**
+
+- **BUSINESS AND LABOR**: business and labor associations 
+- **CHARITY**: public charities 
+- **CIVIC/ADVOCACY**: civic engagement, advocacy, and politically-engaged organizations
+- **COOPERATIVE**: joint assurances and protections from risk? Wealth building and asset building.
+- **DEFUNCT**: category no longer supported by the IRS 
+- **INSURANCE**: protection from risk (primarily individuals, also orgs)
+- **MEMBER ASSOCIATIONS**: groups that operate for the benefit of members (other than cooperatives and pensions) 
+- **PENSION**: wealth building orgs, income smoothing, savings mechanisms
+- **PRIVATE FOUNDATION**: private foundations 
+- **SPECIAL PURPOSE CORP**: tax-exempt corporations with a narrowly-defined set of allowable operations 
+
+---  
+
+
+**exempt_type_secondary**
+
+---  
+
+**govt_incorp**
+
+- **FEDERAL**: The nonprofit was created by the federal government (example, federal credit unions)
+- **STATE**: The nonprofit was created by the state government (example, local credit unions)
+- **NO REQ**: The nonprofit was incorporated by private citizens or other non-governmental organizations. 
+
+---  
+
+**req_990**
+
+- **YES**: The nonprofit is required to file a 990
+- **NO**: The nonprofit is NOT required to file a 990
+- **990PF**: The nonprofit is required to file a 990PF (for private foundations and charitable trusts)
+- **UNK**: Unable to determine from IRS documentation 
+
+---  
+
+**option_990EZ**
+
+- **YES**: If the nonprofit has revenues and assets below the threshold it can file a 990EZ instead of the full 990. 
+- **NO**: The nonprofit is required to file a full 990 (or 990PF), no matter it's size. 
+- **YES_EXCEPT**: Nonprofits in this subsector have the option to file a 990EZ but some are required to file a full 990 or 990PF. 
+
+---  
+
+**donations_deduct** 
+
+- **UNLIMITED**: The organization can receive unlimited tax-deductible donations. 
+- **RESTRICTED**: The organization can receive tax-deductible donations, but in restricted amounts or for a narrow set of purposes. 
+- **NO**: Donations to the organization are NOT tax-deductible. 
+
+---  
+
+**member_types** 
+
+- **INDIVIDUALS**: The nonprofit MUST HAVE MEMBERS to incorporate under this 501c subsector code: members are individuals. 
+- **ORGANIZATIONS**: The nonprofit MUST HAVE MEMBERS to incorporate under this 501c subsector code: members are organizations. 
+- **HYBRID**: The nonprofit MUST HAVE MEMBERS to incorporate under this 501c subsector code: members can be a mix of individuals and organizations.
+- **SHAREHOLDERS**: The nonprofit was incorporated as a special purpose corporation: shareholders serve as members. 
+- **NOT REQ**: The nonprofit is NOT required to have members to incorporate. 
+- **DEFUNCT**: The 501c type is no longer recognized by the IRS. 
+
+---  
+
+**affiliation_status**
+
+- **INDEPENDENT**: The nonprofit can incorporate as an independent organization (or as part of federated structure). 
+- **LODGE**: The nonprofit must incorporate as part of a lodge structure. 
+- **SUBORDINATE**: The nonprofit is a subsidiary organization of other nonprofits or corporations. 
+
+---  
+
+**political_limits**
+
+- **REGULAR**: The nonprofit must abide by the standard restrictions placed upon political engagement.
+- **LESS LIMITED**: The nonprofit has fewer restrictions placed upon lobbying and advocacy, and typically donations are not tax-deductible. 
+
+
+```{r}
+# setwd( "C:/Users/jdlec/Dropbox/00 - URBAN/taxonomies" )
+d.types <- read.csv("TAX-EXEMPT-TYPES-V2.csv")
+
+keep <- 
+c("bmf_code", 
+  "irs_tax_code", 
+  "v501c_label", 
+  "v501c_desc", 
+  "v501c_desc2", 
+  "exempt_type_stakeholder", 
+  "exempt_type_primary", 
+  "exempt_type_secondary", 
+  "govt_incorp", 
+  "req_990", 
+  "option_990EZ", 
+  "donations_deduct", 
+  "political_limits", 
+  "member_types", 
+  "affiliation_status")
+
+d.types2 <- d.types[keep]
+
+# DROP PRIVATE FOUNDATIONS BECAUSE IT DUPLICATES 501c3 ROWS
+d.types2 <- dplyr::filter( d.types2, v501c_desc2 != "501(c)(3) - Private Foundations" )
+
+d.types2 %>% DT::datatable( options=list( pageLength=5, autoWidth=TRUE ))
+```
+
+
+```{r, eval=F, echo=F}
+v1 <- unique( d$BMF_SUBSECTION_CODE )
+v2 <- unique( d.types$bmf_code )
+
+# Undefined in TAX-EXEMPT-TYPES doc
+setdiff( v1, v2 )
+
+# Defined, but do not appear in BMF
+setdiff( v2, v1 )
+```
+
+
+### BMF
+
+```{r}
+bmf <- merge( bmf, d.types2, by.x="SUBSECTION", by.y="bmf_code", all.x=T )
+```
+
+#### exempt_type_stakeholder 
+
+```{r}
+table( bmf$exempt_type_stakeholder, useNA="ifany" ) %>% 
+  kable( format = "html" ) %>%  
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+#### exempt_type_primary
+
+```{r}
+table( bmf$exempt_type_primary, useNA="ifany" ) %>% 
+  kable( format = "html" ) %>%  
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+
+```{r}
+bmf$SS1 <- paste0( "501", bmf$SS )
+
+bmf %>%
+  group_by( irs_tax_code, v501c_label, exempt_type_stakeholder, exempt_type_primary ) %>% 
+  count() %>%
+  kable( format = "html" ) %>%  
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+### Unified BMF 
+
+```{r}
+ubmf <- merge( d, d.types2, by.x="BMF_SUBSECTION_CODE", by.y="bmf_code", all.x=T )
+```
+
+```{r}
+ubmf %>%
+  group_by( irs_tax_code, v501c_label, exempt_type_stakeholder, exempt_type_primary ) %>% 
+  count() %>%
+  kable() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+
+#### BMF_SUBSECTION_CODE
+
+```{r}
+table( ubmf$BMF_SUBSECTION_CODE, useNA="ifany" ) %>% 
+  kable( format = "html" ) %>%  
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+#### exempt_type_stakeholder
+
+```{r}
+table( ubmf$exempt_type_stakeholder, useNA="ifany" ) %>% 
+  kable() %>% 
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+#### exempt_type_primary
+
+```{r}
+table( ubmf$exempt_type_primary, useNA="ifany" ) %>% 
+  kable() %>% 
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```

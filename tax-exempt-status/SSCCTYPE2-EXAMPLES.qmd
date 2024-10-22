@@ -1,0 +1,271 @@
+---
+title: "Examples of Nonprofits Within Each Subsector Charitable Classification (SSCC) Categories"
+format:
+  html:
+    html-table-processing: none
+    code-fold: true
+    toc: true
+    toc-location: right
+    embed-resources: true
+number-sections: false
+execute:
+  warning: false
+  message: false
+  echo: false
+---
+
+
+SS: 501c Tax Exempt Type - "SubSection Code"  
+
+CC: BMF "Classification Code" - the reason for granting tax exemption or charity status 
+
+
+<br>
+<hr>
+
+
+
+### Count by SSCC Type
+
+
+**Subsector Types (Charitable Purpose Reason)** 
+
+
+```{r, echo=F}
+library( dplyr )
+library( stringr )
+library( pander )
+library( knitr )
+library( data.table )
+library( DT )
+library( kableExtra )
+
+# setwd( "C:/Users/jdlec/Dropbox/00 - URBAN/taxonomies" )
+```
+
+
+
+
+```{r}
+#| code-fold: true
+
+new.order <- 
+c("EIN", "EIN2",
+"ORG_NAME_CURRENT","ORG_NAME_SEC",
+"ORG_FISCAL_YEAR", "ORG_PERS_ICO", 
+"ORG_FISCAL_PERIOD",
+"ORG_RULING_DATE", "ORG_RULING_YEAR", 
+### CORE COUNTS
+"ORG_YEAR_FIRST", "ORG_YEAR_LAST", 
+"ORG_YEAR_COUNT", 
+"NTEE_IRS", "NTEE_NCCS", "NTEEV2", 
+"NCCS_LEVEL_1", 
+"NCCS_LEVEL_2", 
+"NCCS_LEVEL_3",
+### BMF
+"BMF_SUBSECTION_CODE", "BMF_STATUS_CODE", 
+"BMF_PF_FILING_REQ_CODE", "BMF_ORGANIZATION_CODE", 
+"BMF_INCOME_CODE", "BMF_GROUP_EXEMPT_NUM", 
+"BMF_FOUNDATION_CODE", "BMF_FILING_REQ_CODE", 
+"BMF_DEDUCTIBILITY_CODE", "BMF_CLASSIFICATION_CODE", 
+"BMF_ASSET_CODE", "BMF_AFFILIATION_CODE",
+### FISCAL FIELDS 
+"F990_TOTAL_REVENUE_RECENT", 
+"F990_TOTAL_INCOME_RECENT", 
+"F990_TOTAL_ASSETS_RECENT", 
+"F990_ORG_ADDR_CITY", 
+"F990_ORG_ADDR_STATE", 
+"F990_ORG_ADDR_ZIP", 
+"F990_ORG_ADDR_STREET",
+### GEOCODE
+"ORG_ADDR_FULL", "ORG_ADDR_MATCH", 
+"LATITUDE", "LONGITUDE", 
+"GEOCODER_SCORE", "GEOCODER_MATCH", 
+### CENSUS
+"CENSUS_CBSA_FIPS", 
+"CENSUS_CBSA_NAME", 
+"CENSUS_BLOCK_FIPS", 
+"CENSUS_URBAN_AREA", 
+"CENSUS_STATE_ABBR", 
+"CENSUS_COUNTY_NAME"  )
+```
+
+
+```{r, cache=TRUE}
+# setwd( "C:/Users/jdlec/Dropbox/00 - URBAN/taxonomies" )
+d <- data.table::fread( "BMF_UNIFIED_V1.1.csv" ) %>% as.data.frame()
+d <- d[ new.order ]
+```
+
+
+
+```{r}
+## Classification Codes are 4-digits
+
+d$CC1 <- substr( d$BMF_CLASSIFICATION_CODE, 1, 1 )
+d$CC2 <- substr( d$BMF_CLASSIFICATION_CODE, 2, 2 )
+d$CC3 <- substr( d$BMF_CLASSIFICATION_CODE, 3, 3 )
+d$CC4 <- substr( d$BMF_CLASSIFICATION_CODE, 4, 4 )
+
+d$SS   <- stringr::str_pad( d$BMF_SUBSECTION_CODE, 2, pad = "0" )
+d$SS   <- paste0( "c", d$SS )
+d$SSCC <- paste0( d$SS, "-", d$CC1 )
+```
+
+
+
+```{r}
+ss <- read.csv("sscc.csv")
+```
+
+
+```{r, cache=TRUE}
+bmf1 <- read.csv("eo1.csv")
+bmf2 <- read.csv("eo2.csv")
+bmf3 <- read.csv("eo3.csv")
+bmf <- bind_rows( bmf1, bmf2, bmf3 )
+
+bmf$SS <- stringr::str_pad( bmf$SUBSECTION, 2, pad = "0" )
+bmf$SS <- paste0( "c", bmf$SS )
+
+bmf$CC1 <- substr( bmf$CLASSIFICATION, 1, 1 )
+bmf$CLASSIFICATION <- gsub( "0", "", bmf$CLASSIFICATION )
+bmf$CC2 <- substr( bmf$CLASSIFICATION, 2, 2 )
+bmf$CC3 <- substr( bmf$CLASSIFICATION, 3, 3 )
+bmf$CC4 <- substr( bmf$CLASSIFICATION, 4, 4 )
+bmf$SSCC <- paste0( bmf$SS, "-", bmf$CC1 )
+```
+
+
+
+
+
+```{r}
+# Add labels to the BMF 
+ss2 <- ss[c("SSCC","SSTYPE","SSTYPE2","CCTYPE","SSCCTYPE1","SSCCTYPE2")]
+bmf <- merge( bmf, ss2, by="SSCC", all.x=T )
+```
+
+
+
+
+
+```{r}
+# setwd( "C:/Users/jdlec/Dropbox/00 - URBAN/taxonomies" )
+d.types <- read.csv("TAX-EXEMPT-TYPES-V2.csv")
+
+keep <- 
+c("bmf_code", 
+  "irs_tax_code", 
+  "v501c_label", 
+  "v501c_desc", 
+  "v501c_desc2", 
+  "exempt_type_stakeholder", 
+  "exempt_type_primary", 
+  "exempt_type_secondary", 
+  "govt_incorp", 
+  "req_990", 
+  "option_990EZ", 
+  "donations_deduct", 
+  "political_limits", 
+  "member_types", 
+  "affiliation_status")
+
+d.types2 <- d.types[keep]
+
+# DROP PRIVATE FOUNDATIONS BECAUSE IT DUPLICATES 501c3 ROWS
+d.types2 <- dplyr::filter( d.types2, v501c_desc2 != "501(c)(3) - Private Foundations" )
+
+```
+
+```{r}
+ubmf <- merge( d, d.types2, by.x="BMF_SUBSECTION_CODE", by.y="bmf_code", all.x=T )
+ubmf <- merge( ubmf, ss2, by="SSCC" )
+```
+
+
+
+
+```{r}
+ubmf$SSCCTYPE2 <- paste0( "501", ubmf$SSCCTYPE2 )
+
+keep.ubmf <- 
+c("irs_tax_code","ORG_NAME_CURRENT","ORG_NAME_SEC", 
+  "ORG_FISCAL_YEAR", "ORG_RULING_YEAR", 
+  "NTEEV2","NCCS_LEVEL_2",
+  "F990_TOTAL_INCOME_RECENT", "F990_TOTAL_ASSETS_RECENT",
+  "F990_ORG_ADDR_CITY",
+  "CCTYPE","SSTYPE",
+  "exempt_type_primary","exempt_type_secondary", 
+  "govt_incorp", "req_990", 
+  "option_990EZ", "donations_deduct", 
+  "political_limits", "member_types", 
+  "affiliation_status","SS","SSTYPE2",
+  "SSCCTYPE2" )
+
+u2 <- ubmf[ keep.ubmf ]
+u2 <- dplyr::filter( u2, SS != "c00" & CCTYPE != "not defined in the bmf dictionary" )
+
+sscc.categories <- unique( u2$SSCCTYPE2 ) |> sort()
+
+na.fis <- is.na( u2$ORG_FISCAL_YEAR )
+na.inc <- is.na( u2$F990_TOTAL_INCOME_RECENT )
+na.ass <- is.na( u2$F990_TOTAL_ASSETS_RECENT )
+u2 <- dplyr::filter( u2, ! ( na.fis | na.inc | na.ass ) )
+```
+
+
+```{r}
+t <- 
+  u2 %>%
+  group_by( SSCCTYPE2 ) %>%
+  summarize( N=n() ) %>%
+  ungroup() 
+
+t %>% 
+  kable( escape=FALSE, format = "html" ) %>%  
+  kable_paper()
+```
+
+
+
+```{r, results="asis"}
+for( i in sscc.categories )
+{
+  
+  bmf.sub <- 
+    u2 %>% 
+    dplyr::filter( SSCCTYPE2 == i ) %>%
+    dplyr::select( - c(CCTYPE,SSTYPE,SS,SSTYPE2,SSCCTYPE2) )
+    
+    
+  if( nrow(bmf.sub) > 25 )
+  { 
+    cat( paste0( "## ", i, "  \n\n" ),  sep = "" )
+    
+    samp <- dplyr::sample_n( bmf.sub, 10 )
+    names(samp) <- toupper( names(samp) )
+    
+    cat( pander::pander( samp ),  sep = "" ) 
+  }
+    
+  cat( paste0( "\n<br><br><br><br>  \n\n" ),  sep = "" )
+}
+```
+
+
+
+```{=html}
+<style>
+
+h2 {
+  margin-top: 80px;
+  color: steelblue;
+}
+
+.table th { color: darkorange !important; }
+
+.table td { font-family: monospace, monospace !important; }
+
+</style>
+```
